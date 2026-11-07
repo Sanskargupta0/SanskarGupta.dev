@@ -31,6 +31,7 @@ const projects = [
   {
     id: createId(),
     title: `Studdy-Buddy`,
+    demoWarning: true,
     description:
       "AI-powered study companion platform that generates comprehensive study materials including notes, flashcards, quizzes, and Q&A sessions from any topic using Google Gemini AI.",
     deployedURL: "https://studdybuddyai.vercel.app/",
@@ -89,14 +90,15 @@ const projects = [
   {
     id: createId(),
     title: `FaceQuest`,
+    isPrivate: true,
     description:
       "Python-based Telegram bot for face image search and verification. Supports user uploads, selfie verification, database storage, and multi-user handling. Uses dlib and face_recognition for image processing.",
     deployedURL: "https://t.me/FaceQuest_Bot",
     cover: facequestCover,
     stacks: ["Python", "Telegram Bot API", "dlib", "face_recognition", "SQLite"],
     categories: ["ai", "automation", "tools"],
-    isRepo: true,
-    repoUrl: "https://github.com/your-username/facequest",
+    isRepo: false,
+    repoUrl: "",
   },
   {
     id: createId(),

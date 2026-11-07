@@ -1,0 +1,82 @@
+/* Adapted from manixh's published skills styles. See docs/licenses/manixh-MIT.txt. */
+.viewport {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+  padding: 16px 0 8px;
+  cursor: grab;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.viewport::-webkit-scrollbar {
+  display: none;
+}
+.viewport:active {
+  cursor: grabbing;
+}
+.track {
+  display: flex;
+  width: max-content;
+  animation: forward 60s linear infinite;
+  will-change: transform;
+}
+.reverse {
+  animation-name: reverse;
+}
+.viewport:hover .track,
+.viewport:focus-visible .track,
+.viewport:active .track {
+  animation-play-state: paused;
+}
+.copy {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 24px;
+  margin: 0;
+  padding: 0 24px 0 0;
+  list-style: none;
+}
+.item {
+  display: flex;
+  align-items: center;
+  margin: 0 4px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  margin-right: 8px;
+  font-size: 1.3em;
+}
+.name {
+  letter-spacing: 0.5px;
+}
+@keyframes forward {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.333333%);
+  }
+}
+@keyframes reverse {
+  from {
+    transform: translateX(-33.333333%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+  .copy[aria-hidden="true"] {
+    display: none;
+  }
+}

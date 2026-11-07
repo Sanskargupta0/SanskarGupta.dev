@@ -6,6 +6,7 @@ import ProfileHeadline from "~/components/profile-headline";
 import { cn } from "~/lib/utils";
 import { typo } from "./ui/typograpghy";
 import ProfilePicture from "~/components/profile-picture";
+import CompanyBadge from "~/components/ui/company-badge";
 // import { annotationsConfig } from "~/constants/anime";
 
 const AboutSection = () => {
@@ -30,20 +31,23 @@ const AboutSection = () => {
         </p>
 
         <p className={typo({ variant: "paragraph", font: "sans" })}>
-          Building <span className="text-[#00adb5]">PioWorker at Piovation GmbH</span>, spanning
-          UI/UX, backend connectors, and code execution; automated QA with{" "}
+          Building <span className="text-[#00adb5]">PioWorker</span> at{" "}
+          <CompanyBadge company="piovation" />, spanning UI/UX, backend connectors, and code
+          execution; automated QA with{" "}
           <span className="text-[#00adb5]">Playwright, Jenkins, and Grafana</span>, cutting manual
           testing by <span className="text-[#00adb5]">~90%</span>.
         </p>
 
         <p className={typo({ variant: "paragraph", font: "sans" })}>
-          Built <span className="text-[#00adb5]">Electronicx GmbH's</span> return automation
-          handling <span className="text-[#00adb5]">€520K+ across 5,000+ returns</span>, saving{" "}
+          Built <CompanyBadge company="electronicx" />
+          's return automation handling{" "}
+          <span className="text-[#00adb5]">€520K+ across 5,000+ returns</span>, saving{" "}
           <span className="text-[#00adb5]">2,000+ staff hours</span>. Previously developed{" "}
           <span className="text-[#00adb5]">Studdy-Buddy</span> using{" "}
           <span className="text-[#00adb5]">Gemini AI and RAG</span>, and{" "}
-          <span className="text-[#00adb5]">AptiDude's MERN examination platform</span> with
-          real-time anti-cheating detection.
+          <CompanyBadge company="aptidude" />
+          's <span className="text-[#00adb5]">MERN examination platform</span> with real-time
+          anti-cheating detection.
         </p>
 
         <p className={typo({ variant: "paragraph", font: "sans" })}>

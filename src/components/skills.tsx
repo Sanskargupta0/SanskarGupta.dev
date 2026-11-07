@@ -1,44 +1,83 @@
 "use client";
-import Marquee from "react-fast-marquee";
-import { BACKEND_STACKS, FRONTEND_STACKS, stacksProps } from "~/constants/stack";
-import { typo } from "./ui/typograpghy";
 
-const Skills = () => {
+import { useRef } from "react";
+import { BACKEND_STACKS, FRONTEND_STACKS, type stacksProps } from "~/constants/stack";
+import CornerHeading from "~/components/ui/corner-heading";
+import { cn } from "~/lib/utils";
+import styles from "./skills.module.css";
+
+const iconColors: Record<string, string> = {
+  Vite: "text-violet-600 dark:text-yellow-50",
+  Bun: "text-amber-800 dark:text-yellow-50",
+  Flask: "text-neutral-700 dark:text-neutral-200",
+  GitHub: "text-neutral-800 dark:text-neutral-100",
+};
+
+function SkillRow({
+  stacks,
+  reverse,
+  label,
+}: {
+  stacks: stacksProps;
+  reverse?: boolean;
+  label: string;
+}) {
+  const drag = useRef<{ x: number; scrollLeft: number } | null>(null);
   return (
-    <section aria-label="skills" className="my-4 space-y-8 bg-background">
-      <h2 className={typo({ variant: "h2" })}>Tools that I have used</h2>
-      <div className="w-full space-y-6">
-        <Marquee autoFill pauseOnHover speed={20}>
-          <SkillsList stacks={FRONTEND_STACKS} />
-        </Marquee>
-
-        <Marquee autoFill pauseOnHover direction="right" speed={20}>
-          <SkillsList stacks={BACKEND_STACKS} />
-        </Marquee>
+    <div
+      className={cn(
+        styles.viewport,
+        "select-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      )}
+      role="group"
+      aria-label={label}
+      tabIndex={0}
+      onPointerDown={(event) => {
+        if (event.pointerType !== "mouse" || event.button !== 0) return;
+        drag.current = { x: event.clientX, scrollLeft: event.currentTarget.scrollLeft };
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }}
+      onPointerMove={(event) => {
+        if (!drag.current) return;
+        const groupWidth =
+          event.currentTarget.firstElementChild?.firstElementChild?.getBoundingClientRect().width ??
+          0;
+        event.currentTarget.scrollLeft = Math.max(
+          0,
+          Math.min(groupWidth, drag.current.scrollLeft + drag.current.x - event.clientX)
+        );
+      }}
+      onPointerUp={() => {
+        drag.current = null;
+      }}
+      onPointerCancel={() => {
+        drag.current = null;
+      }}
+    >
+      <div className={cn(styles.track, reverse && styles.reverse)}>
+        {[0, 1, 2].map((copy) => (
+          <ul key={copy} className={styles.copy} role="list" aria-hidden={copy > 0 || undefined}>
+            {Object.entries(stacks).map(([name, { Icon, className }]) => (
+              <li key={name} className={cn(styles.item, "text-foreground")}>
+                <span className={styles.icon} aria-hidden="true">
+                  <Icon className={iconColors[name] ?? className} />
+                </span>
+                <span className={styles.name}>{name}</span>
+              </li>
+            ))}
+          </ul>
+        ))}
       </div>
+    </div>
+  );
+}
+
+export default function Skills() {
+  return (
+    <section aria-label="skills" className="min-w-0 bg-background">
+      <CornerHeading>My Skills</CornerHeading>
+      <SkillRow stacks={FRONTEND_STACKS} label="Frontend skills" />
+      <SkillRow stacks={BACKEND_STACKS} reverse label="Backend skills and tools" />
     </section>
   );
-};
-
-export default Skills;
-
-const SkillsList = ({ stacks }: { stacks: stacksProps }) => {
-  return (
-    <ul className="flex items-center" role="list">
-      {Object.keys(stacks).map((stack, index) => {
-        const Icon = stacks[stack].Icon;
-        const className = stacks[stack].className;
-        return (
-          <li
-            role="listitem"
-            key={index}
-            className="mr-2 flex w-max items-center gap-2 rounded-full border border-neutral-800 bg-neutral-900 px-3 py-2 text-[15px] text-neutral-50 shadow-sm"
-          >
-            {<Icon className={className} aria-label={stack} />}
-            <span className="whitespace-nowrap">{stack}</span>
-          </li>
-        );
-      })}
-    </ul>
-  );
-};
+}
