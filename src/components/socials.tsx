@@ -8,7 +8,7 @@ import config from "~/config";
 import { cn } from "~/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-const socialsIcons = [
+export const socialsIcons = [
   {
     id: 1,
     label: "Github",

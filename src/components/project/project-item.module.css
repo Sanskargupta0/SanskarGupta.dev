@@ -1,0 +1,175 @@
+/* Reference: manixh project cards. License retained in docs/licenses/manixh-MIT.txt. */
+.card {
+  display: flex;
+  flex-direction: row;
+  gap: 28px;
+  border: 1.5px dashed hsl(var(--muted-foreground) / 0.4);
+  padding: 18px;
+  background: transparent;
+  transition: border-color 0.2s;
+}
+.card:hover,
+.card:focus-within {
+  border-color: hsl(var(--muted-foreground) / 0.85);
+}
+.banner {
+  position: relative;
+  display: block;
+  flex: 0 0 300px;
+  width: 300px;
+  height: 170px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: hsl(var(--muted));
+}
+.banner img {
+  object-fit: cover;
+  filter: grayscale(1);
+  transition: filter 0.35s;
+}
+.card:hover .banner img,
+.card:focus-within .banner img {
+  filter: grayscale(0);
+}
+.details {
+  flex: 1;
+  min-width: 0;
+}
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.title {
+  min-width: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 24px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow:
+    0 2px 8px -4px #0006,
+    inset 0 0 0 1px hsl(var(--muted-foreground) / 0.18);
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.action:hover {
+  background: hsl(var(--accent));
+}
+.description {
+  margin-bottom: 6px;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.techLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.technologies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tag {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: 2px 8px;
+  margin-bottom: 4px;
+  border-radius: 3px;
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted));
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow:
+    0 2px 4px -1px #0004,
+    inset 0 0 0 1px hsl(var(--muted-foreground) / 0.18);
+}
+@media (max-width: 700px) {
+  .card {
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+  }
+  .banner {
+    flex-basis: auto;
+    width: 100%;
+    height: 220px;
+    border-radius: 6px;
+  }
+  .details {
+    width: 100%;
+    padding: 8px 2px 2px;
+  }
+  .header {
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .title {
+    font-size: 1rem;
+  }
+  .actions {
+    gap: 4px;
+  }
+  .technologies {
+    gap: 4px;
+  }
+  .tag {
+    padding: 2px 6px;
+    margin-bottom: 2px;
+  }
+}
+@media (max-width: 400px) {
+  .card {
+    padding: 15px;
+  }
+  .banner {
+    height: 180px;
+  }
+  .header {
+    flex-direction: column;
+  }
+}
+@media (max-width: 360px) {
+  .card {
+    padding: 12px;
+  }
+  .banner {
+    height: 160px;
+  }
+}
+@media (hover: none) {
+  .action {
+    min-height: 36px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .banner img,
+  .action {
+    transition: none;
+  }
+}

@@ -1,108 +1,108 @@
 import Link from "next/link";
-import { getProjectHref } from "~/lib/project-links";
 import Image from "next/image";
-import React from "react";
-import { FaExternalLinkAlt } from "react-icons/fa";
+import { ExternalLink } from "lucide-react";
 import { FaGithub } from "react-icons/fa6";
+import { getProjectHref } from "~/lib/project-links";
 import { cn } from "~/lib/utils";
-import { CustomLink } from "../mdx";
-import { typo } from "../ui/typograpghy";
-import { TProject } from "./_project-mock";
+import type { TProject } from "./_project-mock";
+import styles from "./project-item.module.css";
+import ProjectNotice from "./project-notice";
 
-type ProjectItemProps = {} & TProject;
-
-const linkClass = "!p-0 h-full hover:!text-[#25dde5] !flex items-center gap-2 !text-sm !text-ring";
-
-const ProjectItem: React.FC<ProjectItemProps> = ({
+export default function ProjectItem({
   title,
   description,
   deployedURL,
   cover,
   stacks,
-  categories,
   isRepo,
   repoUrl,
-}) => {
+  isPrivate,
+  demoWarning,
+}: TProject) {
+  const href = getProjectHref(title);
+  const repository =
+    !isPrivate && isRepo && repoUrl && !repoUrl.includes("your-username") ? repoUrl : null;
   return (
-    <li role="listitem">
-      <div className="grid gap-4 rounded-md">
+    <li>
+      <article aria-label={title} className={styles.card}>
         <Link
-          href={getProjectHref(title)}
+          href={href}
           aria-label={"Read about " + title}
-          className="el-focus-styles relative block aspect-video rounded-md"
+          className={cn(
+            styles.banner,
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          )}
         >
           <Image
-            alt={`${title} project preview`}
-            priority
+            alt={title + " project preview"}
             placeholder="blur"
             src={cover}
-            className="size-full rounded-md"
+            fill
+            sizes="(max-width: 700px) calc(100vw - 4rem), 300px"
           />
         </Link>
-
-        <hgroup className="space-y-2 sm:space-y-1">
-          <h2 className="font-ubuntu text-base font-medium">
-            <Link
-              href={getProjectHref(title)}
-              className="el-focus-styles rounded-sm hover:text-ring"
-            >
-              {title}
-            </Link>
-          </h2>
-
-          <div className="space-y-2">
-            <p className={"text-xs text-ring"} aria-label="project stacks">
-              {stacks.join(" / ")}
-            </p>
-
-            <div className="flex flex-wrap gap-1" aria-label="project categories">
-              {categories.map((category) => (
-                <span
-                  key={category}
-                  className="rounded-full bg-accent px-2 py-0.5 text-xs capitalize text-accent-foreground"
+        <div className={styles.details}>
+          <div className={styles.header}>
+            <h3 className={cn(styles.title, "flex items-center gap-1")}>
+              <Link
+                href={href}
+                className="rounded-sm transition-colors hover:text-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {title}
+              </Link>
+              {isPrivate && <ProjectNotice kind="private" project={title} />}
+              {demoWarning && <ProjectNotice kind="demo" project={title} />}
+            </h3>
+            <div className={styles.actions}>
+              {deployedURL && (
+                <a
+                  href={deployedURL}
+                  aria-label={"Visit " + title + " live"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    styles.action,
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  )}
                 >
-                  {category.replace("-", " ")}
-                </span>
-              ))}
+                  <ExternalLink size={12} aria-hidden="true" />
+                  Live
+                </a>
+              )}
+              {repository && (
+                <a
+                  href={repository}
+                  aria-label={"View " + title + " on GitHub"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    styles.action,
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  )}
+                >
+                  <FaGithub size={13} aria-hidden="true" />
+                  GitHub
+                </a>
+              )}
             </div>
           </div>
-
-          <p className={cn(typo({ variant: "paragraph", size: "sm" }), "!mt-4 line-clamp-2")}>
-            {description}
-          </p>
-
-          <div className="!mt-2 flex flex-wrap items-center gap-4">
-            <Link
-              href={getProjectHref(title)}
-              className="el-focus-styles rounded-sm text-sm text-ring underline underline-offset-4"
-            >
-              Read project
-            </Link>
-            {deployedURL && (
-              <CustomLink
-                aria-label={`visit ${title} live URL`}
-                href={deployedURL}
-                className={linkClass}
-              >
-                <FaExternalLinkAlt size={12} />
-                <span> Live Preview</span>
-              </CustomLink>
-            )}
-
-            {isRepo && (
-              <CustomLink
-                aria-label={`visit ${title} Github Repo`}
-                href={repoUrl as string}
-                className={linkClass}
-              >
-                <FaGithub />
-                <span> Repo Url</span>
-              </CustomLink>
-            )}
-          </div>
-        </hgroup>
-      </div>
+          <p className={styles.description}>{description}</p>
+          <span className={styles.techLabel}>Technologies Used:</span>
+          <ul aria-label={title + " technologies"} role="list" className={styles.technologies}>
+            {stacks.map((stack) => (
+              <li key={stack} className={styles.tag}>
+                {stack}
+              </li>
+            ))}
+          </ul>
+          <Link
+            href={href}
+            className="mt-2 inline-block rounded-sm text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Read project<span className="sr-only">: {title}</span>
+          </Link>
+        </div>
+      </article>
     </li>
   );
-};
-export default ProjectItem;
+}
