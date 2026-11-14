@@ -1,22 +1,25 @@
-# Badge-backed Spotify listening
+# Database-backed Spotify listening
 
-No Spotify developer app, client secret, refresh token, or Premium subscription is required by this integration. It relies on the existing public spotify-github-profile connection.
+The existing public spotify-github-profile connection supplies current status and track IDs. No Spotify developer app or new credentials are required.
 
-The server checks the badge redirect with show_offline=true. Only recognized offline SVG responses mean offline; network errors, revoked connections, unexpected data and timeouts mean unavailable. Valid track/episode redirects are converted to HTTPS Spotify URLs. Recent-song redirects without show_offline are deliberately not used because the provider selects a random recent track.
+## Storage and deployment
 
-## No database setup
+A single `SpotifyListening` record (`spotify-profile`) in the existing PostgreSQL database stores the last detected track, observation time, current status, last check time and next refresh time. Offline responses and provider failures never erase the saved song. Nothing is fabricated before the first playing track is detected. No complete listening history is collected.
 
-Listening status uses only the public badge service. The last detected song is held in server memory, which can reset on restart, redeployment, or a different serverless instance. When there is no remembered song, offline visitors see Not playing on Spotify and can switch to the original player. Existing Prisma usage elsewhere in the portfolio is unchanged.
+The additive Prisma migration creates this table and creates the existing schema's `Views` table if absent. Vercel's existing build command runs `prisma generate && prisma migrate deploy && next build`; no new environment variables or services are needed.
 
-## Behavior
+## Shared refresh behavior
 
-- Visible tabs poll every 30 seconds, including while offline or viewing the original player. Background polling stops; focus checks again. Errors back off to 60 seconds.
-- Server requests are deduplicated and cached briefly. Provider Retry-After is respected. Caches are per server instance, not a global rate limiter.
-- The most recently observed playing track is remembered temporarily with its observation time. Offline shows Last detected playing, not a guaranteed complete Spotify listening history. Nothing is invented before the first observation.
-- Polling occurs only while people visit the site. Songs played with no visitors, or between polls, can be missed.
-- A single 80px compact Spotify embed replaces the duplicate badge and expanded player. The badge service still supplies status and track IDs behind the scenes. Narrow containers scale the player to fit without horizontal overflow.
-- The first detected or remembered song loads into the compact embed automatically, with no autoplay. Visitors click its own play button. Spotify controls full playback/preview availability.
-- Polls and theme changes never replace an open player. Its theme is fixed when opened to avoid interrupting audio. Update song switches to a newly detected track only when requested.
-- Switching to the original player removes the embed and stops playback. Switching back preserves the original player's selected track and position.
-- The status reflects the latest poll. An already loaded player retains its selected song; Update song lets the visitor update it without interrupting playback automatically.
-- /api/spotify/open uses the same detected or remembered track and opens Spotify's web URL; profile fallback if none.
+Every request reads the database. Results remain fresh for 30 seconds; when stale, one request claims an atomic 20-second database lease and checks the provider with an eight-second timeout. Concurrent requests return the previously saved result rather than calling the provider again. Expired leases can be reclaimed, and the lease token prevents a late response from overwriting a newer refresh.
+
+Recognized redirects mean playing; recognized offline SVG responses mean offline. Errors, unexpected content and invalid redirects mean unavailable. Failed checks back off for 60 seconds; provider Retry-After headers can extend the shared delay. Database failures return unavailable without exposing credentials or errors to visitors.
+
+Visible tabs poll every 30 seconds (60 seconds after errors), and check again on focus. There is no scheduled background collector, so songs played without visitors or between checks can be missed. The label is therefore last detected, rather than guaranteed last played.
+
+## Player
+
+The compact Spotify embed loads the detected or saved song without autoplay. It retains its selected track and theme while open; Update song switches to a new detected track only when requested. Switching to the original music player stops the embed. Spotify controls preview and playback availability.
+
+## Verification
+
+After generating the Prisma client and applying migrations, run `node scripts/test-listening.cjs` with database environment variables configured. This integration check creates and removes a uniquely named test row, mocks provider responses, and verifies persistence across fresh module instances, shared freshness, offline/error retention, rate-limit backoff, concurrent refresh leasing and invalid redirects. It never changes the live profile row or calls Spotify.
