@@ -12,3 +12,15 @@ model Views {
   slug  String @id
   count Int    @default(0)
 }
+
+model SpotifyListening {
+  id          String    @id
+  state       String    @default("unavailable")
+  trackId     String?
+  trackKind   String?
+  observedAt  DateTime?
+  checkedAt   DateTime?
+  nextCheckAt DateTime  @default(now())
+  leaseToken  String?
+  leaseUntil  DateTime?
+}

@@ -12,7 +12,6 @@
 .prisma
 javascript/**/migrations/
 typescript/**/migrations/
-/prisma/migrations
 
 # testing
 /coverage
