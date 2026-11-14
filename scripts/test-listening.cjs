@@ -6,7 +6,7 @@ const vm = require("node:vm");
 const { randomUUID } = require("node:crypto");
 const ts = require("typescript");
 const { PrismaClient } = require("@prisma/client");
-const db = new PrismaClient();
+const db = new PrismaClient({ datasources: { db: { url: process.env.POSTGRES_URL_NON_POOLING } } });
 const id = "listening-test-" + randomUUID();
 const trackId = "1234567890123456789012";
 let calls = 0;
@@ -26,7 +26,11 @@ function freshInstance() {
     AbortSignal,
     console,
     require: (name) =>
-      name === "server-only" ? {} : name === "~/server/db" ? { db } : require(name),
+      name === "server-only"
+        ? {}
+        : name === "~/server/listening-db"
+          ? { listeningDb: db }
+          : require(name),
     fetch: async () => {
       calls++;
       return provider();
