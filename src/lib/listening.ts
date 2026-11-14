@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import type { SpotifyListening } from "@prisma/client";
-import { db } from "~/server/db";
+import { listeningDb as db } from "~/server/listening-db";
 import type { ListeningStatus } from "~/types/listening";
 
 const ENDPOINT =

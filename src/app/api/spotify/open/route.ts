@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getListeningStatus } from "~/lib/listening";
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 export async function GET() {
   const { track } = await getListeningStatus();
   const destination = track

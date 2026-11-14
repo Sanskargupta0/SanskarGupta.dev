@@ -6,7 +6,7 @@ The existing public spotify-github-profile connection supplies current status an
 
 A single `SpotifyListening` record (`spotify-profile`) in the existing PostgreSQL database stores the last detected track, observation time, current status, last check time and next refresh time. Offline responses and provider failures never erase the saved song. Nothing is fabricated before the first playing track is detected. No complete listening history is collected.
 
-The additive Prisma migration creates this table and creates the existing schema's `Views` table if absent. Vercel's existing build command runs `prisma generate && prisma migrate deploy && next build`; no new environment variables or services are needed.
+The additive Prisma migration creates this table and creates the existing schema's `Views` table if absent. Vercel's existing build command runs `prisma generate && prisma migrate deploy && next build`; no new environment variables or services are needed. Spotify reads use the existing POSTGRES_URL_NON_POOLING connection directly with a maximum of two connections per server instance, avoiding HTTP proxy/framework fetch caching. Both Spotify routes explicitly force uncached fetches.
 
 ## Shared refresh behavior
 
