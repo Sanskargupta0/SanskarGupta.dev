@@ -219,7 +219,9 @@ export function TextEffect({
           aria-label={ariaLabel}
           variants={delayedContainerVariants}
           className={cn("whitespace-pre-wrap", className)}
-          onAnimationComplete={onAnimationComplete}
+          onAnimationComplete={(definition) => {
+            if (definition === "visible") onAnimationComplete?.();
+          }}
         >
           {segments.map((segment, index) =>
             segment === "\n" ? (

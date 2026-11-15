@@ -116,6 +116,7 @@ function FloatingDockDesktop({ items, className }: { items: DockItem[]; classNam
   const mouseX = useMotionValue(Infinity);
   return (
     <motion.div
+      data-pet-barrier
       onMouseMove={(event) => mouseX.set(event.clientX)}
       onMouseLeave={() => mouseX.set(Infinity)}
       className={cn(

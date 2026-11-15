@@ -19,6 +19,9 @@ export function startOneko() {
   let manualSleep = false;
   let autoSleep = false;
   let variant;
+  const dockQuery = matchMedia("(max-width: 1024px), (hover: none), (pointer: coarse)");
+  let docked = false;
+  let dockFrame = 0;
   function readPreference(key) {
     try {
       return JSON.parse(localStorage.getItem("oneko:" + key));
@@ -40,10 +43,10 @@ export function startOneko() {
     : petVariants[Math.floor(Math.random() * petVariants.length)].id;
   function emitState() {
     nekoEl.dataset.variant = variant;
-    nekoEl.dataset.sleeping = String(manualSleep || autoSleep);
+    nekoEl.dataset.sleeping = String(docked || manualSleep || autoSleep);
     window.dispatchEvent(
       new CustomEvent("oneko:state", {
-        detail: { variant, sleeping: manualSleep || autoSleep, manualSleep },
+        detail: { variant, sleeping: docked || manualSleep || autoSleep, manualSleep, docked },
       })
     );
   }
@@ -137,7 +140,7 @@ export function startOneko() {
     );
     nekoEl.setAttribute("aria-haspopup", "dialog");
     nekoEl.tabIndex = 0;
-    nekoEl.style.cursor = "grab";
+    nekoEl.style.cursor = docked ? "pointer" : "grab";
     nekoEl.style.touchAction = "none";
     nekoEl.style.userSelect = "none";
     nekoEl.title = "Drag to move. Right-click to choose a pet. Double-click to sleep.";
@@ -152,6 +155,8 @@ export function startOneko() {
     nekoEl.style.backgroundImage = "url(/oneko/oneko-" + variant + ".gif)";
 
     document.body.appendChild(nekoEl);
+    syncDock();
+    dockQuery.addEventListener("change", syncDock);
 
     document.addEventListener("pointermove", onPointerMove, { passive: true });
     document.addEventListener("pointerdown", onPointerFocus, true);
@@ -194,6 +199,68 @@ export function startOneko() {
   function setSprite(name, frame) {
     const sprite = spriteSets[name][frame % spriteSets[name].length];
     nekoEl.style.backgroundPosition = `${sprite[0] * 32}px ${sprite[1] * 32}px`;
+  }
+
+  function syncDock() {
+    const home = document.querySelector("[data-pet-home]");
+    const next = dockQuery.matches;
+    if (next && !home) {
+      nekoEl.style.visibility = "hidden";
+      return;
+    }
+    if (next === docked && (!next || nekoEl.parentElement === home)) return;
+    cancelDrag();
+    docked = next;
+    dockFrame = 0;
+    nekoEl.dataset.docked = String(docked);
+    nekoEl.style.transform = "";
+    nekoEl.style.visibility = "";
+    nekoEl.style.position = docked ? "absolute" : "fixed";
+    nekoEl.style.zIndex = docked ? "0" : "30";
+    nekoEl.style.cursor = docked ? "pointer" : "grab";
+    nekoEl.style.touchAction = docked ? "manipulation" : "none";
+    nekoEl.style.transformOrigin = "50% 85%";
+    nekoEl.title = docked ? "Sleeping companion. Tap to choose a pet." : "Drag to move. Right-click to choose a pet. Double-click to sleep.";
+    nekoEl.setAttribute("aria-label", docked ? "Sleeping pet companion: choose a pet" : "Pet companion: drag to move, Enter to choose a pet, Space to sleep");
+    (docked ? home : document.body).appendChild(nekoEl);
+    if (docked) {
+      nekoEl.style.left = "4px";
+      nekoEl.style.top = "8px";
+      nekoEl.dataset.dockPhase = "hidden";
+    } else {
+      delete nekoEl.dataset.dockPhase;
+      constrainPosition();
+    }
+    emitState();
+  }
+
+  function dockFrameStep() {
+    if (document.querySelector("[data-site-loader]")) return;
+    dockFrame += 1;
+    const end = nekoEl.parentElement.offsetWidth + 4;
+    let left = 4;
+    let phase = "hidden";
+    if (dockFrame > 4 && dockFrame <= 12) {
+      phase = "emerging";
+      left = 4 + (end - 12) * Math.min(1, (dockFrame - 4) / 8);
+      setSprite("E", dockFrame);
+    } else if (dockFrame <= 20 && dockFrame > 12) {
+      phase = "shaking";
+      left = end - 8;
+      setSprite("alert", 0);
+      nekoEl.style.transform = `rotate(${dockFrame % 2 ? -8 : 8}deg)`;
+    } else if (dockFrame > 20 && dockFrame <= 26) {
+      phase = "settling";
+      left = end - 8 + 8 * (dockFrame - 20) / 6;
+      setSprite("E", dockFrame);
+    } else if (dockFrame > 26) {
+      phase = "sleeping";
+      left = end;
+      setSprite("sleeping", Math.floor((dockFrame - 26) / 4));
+    }
+    if (phase !== "shaking") nekoEl.style.transform = "";
+    nekoEl.style.left = `${left}px`;
+    nekoEl.dataset.dockPhase = phase;
   }
 
   function resetIdleAnimation() {
@@ -253,7 +320,14 @@ export function startOneko() {
 
   function frame() {
     frameCount += 1;
+    if (dockQuery.matches && (!docked || !nekoEl.parentElement?.matches("[data-pet-home]"))) syncDock();
     if (paused || drag) return;
+    if (docked) {
+      dockFrameStep();
+      return;
+    }
+    // Recheck even while idle/asleep: hovered dock icons can grow toward the pet.
+    constrainPosition();
     if (manualSleep || autoSleep) {
       idleAnimation = "sleeping";
       idle();
@@ -311,7 +385,7 @@ export function startOneko() {
       } catch {}
     }
     drag = null;
-    nekoEl.style.cursor = "grab";
+    nekoEl.style.cursor = docked ? "pointer" : "grab";
     resetIdleAnimation();
   }
   function onPointerFocus() { nekoEl.dataset.pointerFocus = "true"; }
@@ -319,6 +393,11 @@ export function startOneko() {
 
   function onPointerDown(event) {
     if (event.button !== 0 || !event.isPrimary || paused) return;
+    if (docked) {
+      event.preventDefault();
+      openPicker();
+      return;
+    }
     event.preventDefault();
     cancelDrag();
     nekoEl.focus({ preventScroll: true });
@@ -362,7 +441,7 @@ export function startOneko() {
       }
       return;
     }
-    if (event.pointerType === "touch" || paused || manualSleep || autoSleep) return;
+    if (docked || event.pointerType === "touch" || paused || manualSleep || autoSleep) return;
     mousePosX = event.clientX;
     mousePosY = event.clientY;
   }
@@ -388,6 +467,7 @@ export function startOneko() {
     }
   }
   function toggleSleep() {
+    if (docked) return;
     manualSleep = !(manualSleep || autoSleep);
     autoSleep = false;
     resetIdleAnimation();
@@ -433,10 +513,28 @@ export function startOneko() {
         if (side === 3) y = bottom;
       }
     }
+    // The bottom dock is solid all the way to the viewport edge. Include growing
+    // icons in its bounds so the full 32px sprite stays outside the visible dock.
+    for (const dock of document.querySelectorAll("[data-pet-barrier]")) {
+      const bounds = dock.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) continue;
+      let left = bounds.left, right = bounds.right, top = bounds.top;
+      for (const icon of dock.querySelectorAll("a")) {
+        const iconBounds = icon.getBoundingClientRect();
+        left = Math.min(left, iconBounds.left);
+        right = Math.max(right, iconBounds.right);
+        top = Math.min(top, iconBounds.top);
+      }
+      const clearance = 20; // Half the sprite plus a 4px visible gap.
+      if (x > left - clearance && x < right + clearance && y > top - clearance) {
+        y = top - clearance;
+      }
+    }
     return { x, y };
   }
 
   function constrainPosition() {
+    if (docked) return;
     const position = avoidControls(nekoPosX, nekoPosY);
     nekoPosX = position.x;
     nekoPosY = position.y;
@@ -458,6 +556,7 @@ export function startOneko() {
   emitState();
   return () => {
     window.cancelAnimationFrame(animationFrame);
+    dockQuery.removeEventListener("change", syncDock);
     document.removeEventListener("pointermove", onPointerMove);
     document.removeEventListener("pointerdown", onPointerFocus, true);
     document.removeEventListener("keydown", onKeyboardFocus, true);

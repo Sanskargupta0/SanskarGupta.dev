@@ -188,7 +188,7 @@ function useStarFit(ref: RefObject<HTMLSpanElement>, enabled: boolean) {
   return compact;
 }
 
-function HandwrittenAnnotation({ star }: { star: boolean }) {
+function HandwrittenAnnotation({ star, onWritten }: { star: boolean; onWritten?: () => void }) {
   const { ref, started, alreadyPlayed } = useAnnotationReveal(star);
   const compact = useStarFit(ref, star);
   const prefersReducedMotion = useReducedMotion();
@@ -196,6 +196,12 @@ function HandwrittenAnnotation({ star }: { star: boolean }) {
   useEffect(() => setHydrated(true), []);
   const reducedMotion = !!(hydrated && prefersReducedMotion);
   const [complete, setComplete] = useState(false);
+  const notifiedWritten = useRef(false);
+  useEffect(() => {
+    if (!started || !complete || alreadyPlayed || reducedMotion || notifiedWritten.current) return;
+    notifiedWritten.current = true;
+    onWritten?.();
+  }, [started, complete, alreadyPlayed, reducedMotion, onWritten]);
   const { phase, finish } = useAnnotationExit(
     ref,
     started && (complete || reducedMotion),
@@ -295,6 +301,6 @@ export default function MusicSourceNote() {
   return <HandwrittenAnnotation star={false} />;
 }
 
-export function PortfolioStarNote() {
-  return <HandwrittenAnnotation star />;
+export function PortfolioStarNote({ onWritten }: { onWritten?: () => void }) {
+  return <HandwrittenAnnotation star onWritten={onWritten} />;
 }

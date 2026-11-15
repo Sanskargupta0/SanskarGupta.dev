@@ -8,7 +8,7 @@ import { petVariants, startOneko } from "~/lib/oneko";
 import { Button } from "~/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 
-type PetState = { variant: string; sleeping: boolean };
+type PetState = { variant: string; sleeping: boolean; docked?: boolean };
 const send = (name: string, detail?: unknown) =>
   window.dispatchEvent(new CustomEvent(name, { detail }));
 
@@ -129,6 +129,7 @@ export default function PetCat() {
             <Button
               variant="ghost"
               size="sm"
+              disabled={pet.docked}
               onClick={() => {
                 send("oneko:toggle-sleep");
                 setOpen(false);
@@ -139,11 +140,11 @@ export default function PetCat() {
               ) : (
                 <Moon aria-hidden="true" className="mr-2 size-4" />
               )}
-              {pet.sleeping ? "Wake pet" : "Put pet to sleep"}
+              {pet.docked ? "Resting beside the logo" : pet.sleeping ? "Wake pet" : "Put pet to sleep"}
             </Button>
           </div>
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            Drag to move. Double-click to sleep or wake.
+            {pet.docked ? "Your companion stays beside the logo on this device." : "Drag to move. Double-click to sleep or wake."}
           </p>
         </Dialog.Content>
       </Dialog.Portal>

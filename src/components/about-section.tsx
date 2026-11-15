@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { PortfolioStar } from "~/components/portfolio-actions";
 import { PortfolioStarNote } from "~/components/music-source-note";
 import ListeningWidget from "~/components/listening-widget";
@@ -11,6 +12,7 @@ import CompanyBadge from "~/components/ui/company-badge";
 // import { annotationsConfig } from "~/constants/anime";
 
 const AboutSection = () => {
+  const [starIntroductionComplete, setStarIntroductionComplete] = useState(false);
   return (
     <section id="about" className="grid gap-8 sm:gap-4 md:grid-cols-3" aria-label="About">
       <div className="order-2 space-y-3 sm:order-1 md:col-span-2">
@@ -20,8 +22,8 @@ const AboutSection = () => {
             <span className="inline-flex items-center gap-1.5">
               <span className="text-italic font-normal text-[#00adb5]">aka Ayush</span>
               <span className="relative inline-flex items-center" data-portfolio-star-target>
-                <PortfolioStar />
-                <PortfolioStarNote />
+                <PortfolioStar celebrationTrigger={starIntroductionComplete ? 1 : 0} />
+                <PortfolioStarNote onWritten={() => setStarIntroductionComplete(true)} />
               </span>
             </span>
           </h1>
