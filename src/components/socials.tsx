@@ -1,6 +1,6 @@
 import { ClassValue } from "clsx";
-import { Linkedin } from "lucide-react";
-import { FaInstagram, FaYoutube, FaXTwitter } from "react-icons/fa6";
+import { Linkedin, Mail } from "lucide-react";
+import { FaInstagram, FaXTwitter } from "react-icons/fa6";
 import { FiGithub } from "react-icons/fi";
 import { TbBrandDiscord } from "react-icons/tb";
 import { SiBuymeacoffee } from "react-icons/si";
@@ -39,10 +39,10 @@ export const socialsIcons = [
   },
   {
     id: 5,
-    label: "YouTube",
-    icon: <FaYoutube className="size-[1.2rem]" />,
-    href: config.social.youtube,
-    className: "hover:bg-red-600 hover:text-white" as ClassValue,
+    label: "Email",
+    icon: <Mail className="size-[1.2rem]" />,
+    href: `mailto:${config.social.email}`,
+    className: "hover:bg-gray-400 hover:text-black" as ClassValue,
   },
   {
     id: 6,
@@ -74,7 +74,7 @@ const Socials = () => {
                   social.className
                 )}
                 aria-label={social.label}
-                target="_blank"
+                target={social.href.startsWith("mailto:") ? undefined : "_blank"}
                 rel="external"
               >
                 {social.icon}

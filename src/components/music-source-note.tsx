@@ -11,6 +11,8 @@ import styles from "./music-source-note.module.css";
 
 const handwriting = Caveat({ weight: "400", subsets: ["latin"], display: "swap" });
 const desktopQuery = "(min-width: 1280px) and (hover: hover) and (pointer: fine)";
+// Keep the claim across React remounts, with session storage covering reloads too.
+const playedAnnotations = new Set<string>();
 const writing: { container: Variants; item: Variants } = {
   container: {
     hidden: { opacity: 1 },
@@ -26,9 +28,21 @@ const writing: { container: Variants; item: Variants } = {
 function useAnnotationReveal(allSizes: boolean) {
   const ref = useRef<HTMLSpanElement>(null);
   const [started, setStarted] = useState(false);
+  const [alreadyPlayed, setAlreadyPlayed] = useState(false);
+  const key = `portfolio-annotation:${allSizes ? "star" : "music"}:v1`;
   useEffect(() => {
     const element = ref.current;
     if (!element || started) return;
+    let played = playedAnnotations.has(key);
+    try {
+      played ||= sessionStorage.getItem(key) === "played";
+    } catch {
+      // The in-memory claim still works when browser storage is unavailable.
+    }
+    if (played) {
+      setAlreadyPlayed(true);
+      return;
+    }
     const desktop = window.matchMedia(desktopQuery);
     let fontsReady = false;
     let disposed = false;
@@ -43,7 +57,15 @@ function useAnnotationReveal(allSizes: boolean) {
       const bounds = element.getBoundingClientRect();
       const copy = element.querySelector(":scope > span")?.getBoundingClientRect();
       if (allSizes && copy && (copy.top < 16 || copy.bottom > innerHeight - 72)) return;
-      if (bounds.width && bounds.bottom > 0 && bounds.top < innerHeight) setStarted(true);
+      if (bounds.width && bounds.bottom > 0 && bounds.top < innerHeight) {
+        playedAnnotations.add(key);
+        try {
+          sessionStorage.setItem(key, "played");
+        } catch {
+          // Navigation remains protected by the in-memory claim.
+        }
+        setStarted(true);
+      }
     };
     const loader = new MutationObserver(reveal);
     loader.observe(document.body, { childList: true, subtree: true });
@@ -63,8 +85,8 @@ function useAnnotationReveal(allSizes: boolean) {
       visibility.disconnect();
       desktop.removeEventListener("change", reveal);
     };
-  }, [started, allSizes]);
-  return { ref, started };
+  }, [started, allSizes, key]);
+  return { ref, started, alreadyPlayed };
 }
 
 // Expiry continues offscreen; the one-shot exit waits until the visitor can see it.
@@ -167,7 +189,7 @@ function useStarFit(ref: RefObject<HTMLSpanElement>, enabled: boolean) {
 }
 
 function HandwrittenAnnotation({ star }: { star: boolean }) {
-  const { ref, started } = useAnnotationReveal(star);
+  const { ref, started, alreadyPlayed } = useAnnotationReveal(star);
   const compact = useStarFit(ref, star);
   const prefersReducedMotion = useReducedMotion();
   const [hydrated, setHydrated] = useState(false);
@@ -185,6 +207,8 @@ function HandwrittenAnnotation({ star }: { star: boolean }) {
   const paths = star
     ? ["M112 40C104 0 55 0 8 30", "m10 15-2 15 15-3"]
     : ["M48 6C48 58 28 62 6 62", "m13 56-7 6 7 6"];
+
+  if (alreadyPlayed) return null;
 
   return (
     <span
