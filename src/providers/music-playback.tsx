@@ -247,7 +247,7 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
   const selectSource = (next: "spotify" | "library") => {
     setSource(next);
     if (next === "spotify") {
-      playerRef.current?.pauseVideo();
+      if (ready) playerRef.current?.pauseVideo();
       setIsPlaying(false);
       setHasSession(false);
     }

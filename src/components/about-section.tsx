@@ -1,6 +1,7 @@
 "use client";
 
 import { PortfolioStar } from "~/components/portfolio-actions";
+import { PortfolioStarNote } from "~/components/music-source-note";
 import ListeningWidget from "~/components/listening-widget";
 import ProfileHeadline from "~/components/profile-headline";
 import { cn } from "~/lib/utils";
@@ -18,7 +19,10 @@ const AboutSection = () => {
             Sanskar Gupta{" "}
             <span className="inline-flex items-center gap-1.5">
               <span className="text-italic font-normal text-[#00adb5]">aka Ayush</span>
-              <PortfolioStar />
+              <span className="relative inline-flex items-center" data-portfolio-star-target>
+                <PortfolioStar />
+                <PortfolioStarNote />
+              </span>
             </span>
           </h1>
           <ProfileHeadline />
