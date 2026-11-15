@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { ListeningStatus, ListeningTrack } from "~/types/listening";
 import { ArrowLeftRight } from "lucide-react";
 import MusicPlayer from "~/components/music-player";
+import MusicSourceNote from "~/components/music-source-note";
 import { useMusicPlayback } from "~/providers/music-playback";
 
 export default function ListeningWidget() {
@@ -85,17 +86,20 @@ export default function ListeningWidget() {
             </button>
           )}
       </span>
-      <button
-        type="button"
-        aria-label={showSpotify ? "Show music player" : "Show Spotify listening status"}
-        title={showSpotify ? "Switch to music player" : "Switch to Spotify"}
-        onClick={() => {
-          selectSource(showSpotify ? "library" : "spotify");
-        }}
-        className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <ArrowLeftRight size={13} />
-      </button>
+      <div className="relative" data-music-source-switch>
+        <button
+          type="button"
+          aria-label={showSpotify ? "Show music player" : "Show Spotify listening status"}
+          title={showSpotify ? "Switch to music player" : "Switch to Spotify"}
+          onClick={() => {
+            selectSource(showSpotify ? "library" : "spotify");
+          }}
+          className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <ArrowLeftRight size={13} />
+        </button>
+        <MusicSourceNote />
+      </div>
       {showSpotify && (
         <div className="col-span-2 flex h-20 min-w-0 flex-col justify-center">
           {preview ? (

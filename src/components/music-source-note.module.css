@@ -1,0 +1,87 @@
+.note {
+  display: none;
+  position: absolute;
+  left: calc(100% + 16px);
+  top: -92px;
+  width: 176px;
+  height: 112px;
+  color: oklch(0.552 0.016 285.938);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+:global(.dark) .note {
+  color: oklch(0.705 0.015 286.067);
+}
+
+.arrow {
+  position: absolute;
+  left: -24px;
+  top: 42px;
+  width: 56px;
+  height: 70px;
+}
+
+.text {
+  display: block;
+  white-space: nowrap;
+  transform: rotate(-6deg);
+  transform-origin: top left;
+}
+
+.starNote {
+  display: block;
+  left: 100%;
+  top: 0;
+  width: var(--star-note-width, min(270px, max(0px, calc(100vw - 260px))));
+  height: 76px;
+  font-size: var(--star-font-size, 20px);
+}
+
+.starNote:not([data-star-fitted]),
+.starNote:not([data-annotation-ready]) {
+  visibility: hidden;
+  overflow: hidden;
+}
+
+.starArrow {
+  position: absolute;
+  left: 0;
+  top: calc(10px - 30px * var(--star-arrow-scale, 1));
+  width: calc(120px * var(--star-arrow-scale, 1));
+  height: calc(50px * var(--star-arrow-scale, 1));
+}
+
+.starText {
+  position: absolute;
+  left: calc(100px * var(--star-arrow-scale, 1));
+  top: calc(10px + 14px * var(--star-arrow-scale, 1));
+  white-space: nowrap;
+  transform: rotate(-6deg);
+  transform-origin: top left;
+}
+
+/* Keep the original font shaping and line geometry while opacity reveals letters. */
+.text :global([data-text-effect-segment]),
+.text :global([data-text-effect-character]),
+.starText :global([data-text-effect-segment]),
+.starText :global([data-text-effect-character]) {
+  display: inline;
+}
+
+.note[data-vaporizing="true"] > svg,
+.note[data-vaporizing="true"] > span,
+.note[data-annotation-state="cleared"] {
+  visibility: hidden;
+}
+
+/* The side margin fits the note only on wide desktop layouts. */
+@media (min-width: 1280px) and (hover: hover) and (pointer: fine) {
+  .note {
+    display: block;
+  }
+}
