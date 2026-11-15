@@ -1,4 +1,6 @@
 "use client";
+import { MusicPlaybackProvider } from "./music-playback";
+import MusicIsland from "~/components/music-island";
 import { CommandMenuProvider } from "~/components/command-menu";
 import type { CommandSearchEntry } from "~/types/command-search";
 import { ReactNode } from "react";
@@ -32,12 +34,15 @@ const RootProviders = ({
         <ReactQueryProvider>
           <TooltipProvider>
             <CommandMenuProvider entries={searchEntries}>
-              <PetCat />
-              <ScrollProgress />
-              <TopLoader />
-              <LoadingScreen />
-              {children}
-              <Toaster />
+              <MusicPlaybackProvider>
+                <PetCat />
+                <ScrollProgress />
+                <TopLoader />
+                <LoadingScreen />
+                {children}
+                <Toaster />
+                <MusicIsland />
+              </MusicPlaybackProvider>
             </CommandMenuProvider>
           </TooltipProvider>
         </ReactQueryProvider>

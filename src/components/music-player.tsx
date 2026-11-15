@@ -1,235 +1,55 @@
 "use client";
-
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
-
-interface YTPlayer {
-  playVideo(): void;
-  pauseVideo(): void;
-  seekTo(seconds: number, allowSeekAhead: boolean): void;
-  getCurrentTime(): number;
-  getDuration(): number;
-  loadVideoById(videoId: string): void;
-  cueVideoById(videoId: string): void;
-  destroy(): void;
-}
-
-interface YTPlayerOptions {
-  width: number;
-  height: number;
-  videoId: string;
-  playerVars: Record<string, number | string>;
-  events: {
-    onReady?: () => void;
-    onStateChange?: (event: { data: number }) => void;
-    onError?: () => void;
-  };
-}
-
-declare global {
-  interface Window {
-    YT?: {
-      Player: new (el: HTMLElement, opts: YTPlayerOptions) => YTPlayer;
-    };
-    onYouTubeIframeAPIReady?: () => void;
-  }
-}
-
-interface Track {
-  title: string;
-  artist: string;
-  videoId: string;
-}
-
-const TRACKS: Track[] = [
-  {
-    title: "La Campanella ( 1826 )",
-    artist: "Niccolò Paganini",
-    videoId: "6ruHDWSNvB8",
-  },
-  {
-    title: "Alla Turca (Sonata No. 11)",
-    artist: "Mozart · Tzvi Erez",
-    videoId: "SQh1zztmpEk",
-  },
-  {
-    title: "Passacaglia",
-    artist: "Handel / Halvorsen",
-    videoId: "ApCL2GomTD4",
-  },
-];
-
-function loadYouTubeApi(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (window.YT?.Player) {
-      resolve();
-      return;
-    }
-    if (!document.getElementById("yt-iframe-api")) {
-      const tag = document.createElement("script");
-      tag.id = "yt-iframe-api";
-      tag.src = "https://www.youtube.com/iframe_api";
-      document.head.appendChild(tag);
-    }
-    const previous = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => {
-      previous?.();
-      window.clearInterval(poll);
-      window.clearTimeout(timeout);
-      resolve();
-    };
-    const poll = window.setInterval(() => {
-      if (window.YT?.Player) {
-        window.clearInterval(poll);
-        window.clearTimeout(timeout);
-        resolve();
-      }
-    }, 200);
-    const timeout = window.setTimeout(() => {
-      window.clearInterval(poll);
-      reject(new Error("Music is unavailable"));
-    }, 15000);
-  });
-}
-
-function formatTime(seconds: number) {
-  if (!Number.isFinite(seconds) || seconds < 0) return "00:00";
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
+import { formatMusicTime, useMusicPlayback } from "~/providers/music-playback";
 
 export function MusicPlayer({ active = true }: { active?: boolean }) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const playerRef = useRef<YTPlayer | null>(null);
-  const [trackIndex, setTrackIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [ready, setReady] = useState(false);
-  const [unavailable, setUnavailable] = useState(false);
-
-  const track = TRACKS[trackIndex]!;
+  const inlineRef = useRef<HTMLDivElement>(null);
+  const {
+    track,
+    trackIndex,
+    isPlaying,
+    currentTime,
+    duration,
+    ready,
+    unavailable,
+    prepare,
+    togglePlay,
+    goToTrack,
+    seekTo,
+    setInlineVisible,
+  } = useMusicPlayback();
   const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
-
   useEffect(() => {
-    let cancelled = false;
-    loadYouTubeApi()
-      .then(() => {
-        if (cancelled || !hostRef.current || !window.YT) return;
-        const mount = document.createElement("div");
-        hostRef.current.replaceChildren(mount);
-        playerRef.current = new window.YT.Player(mount, {
-          width: 200,
-          height: 200,
-          videoId: TRACKS[0]!.videoId,
-          playerVars: {
-            autoplay: 0,
-            controls: 0,
-            disablekb: 1,
-            playsinline: 1,
-            rel: 0,
-            origin: window.location.origin,
-          },
-          events: {
-            onReady: () => {
-              if (!cancelled) setReady(true);
-            },
-            onError: () => {
-              if (!cancelled) {
-                setUnavailable(true);
-                setIsPlaying(false);
-              }
-            },
-            onStateChange: (e) => {
-              if (cancelled) return;
-              setIsPlaying(e.data === 1);
-              if (e.data === 0) {
-                try {
-                  playerRef.current?.seekTo(0, true);
-                  playerRef.current?.playVideo();
-                } catch {
-                  /* player not ready */
-                }
-              }
-            },
-          },
-        });
-      })
-      .catch(() => {
-        if (!cancelled) setUnavailable(true);
-      });
+    prepare();
+  }, [prepare]);
+  useEffect(() => {
+    const element = inlineRef.current;
+    if (!element || !active) {
+      setInlineVisible(false);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => setInlineVisible(entry.isIntersecting), {
+      rootMargin: "-64px 0px 0px 0px",
+      threshold: 0,
+    });
+    observer.observe(element);
     return () => {
-      cancelled = true;
-      try {
-        playerRef.current?.destroy();
-        playerRef.current = null;
-      } catch {
-        /* player already gone */
-      }
+      observer.disconnect();
+      setInlineVisible(false);
     };
-  }, []);
-
-  useEffect(() => {
-    if (!isPlaying) return;
-    const id = window.setInterval(() => {
-      const player = playerRef.current;
-      if (!player) return;
-      try {
-        setCurrentTime(player.getCurrentTime());
-        const d = player.getDuration();
-        if (d > 0) setDuration(d);
-      } catch {
-        /* player not ready */
-      }
-    }, 500);
-    return () => window.clearInterval(id);
-  }, [isPlaying]);
-
-  useEffect(() => {
-    if (!active && ready) playerRef.current?.pauseVideo();
-  }, [active, ready]);
-
-  const goToTrack = (index: number) => {
-    const next = (index + TRACKS.length) % TRACKS.length;
-    const wasPlaying = isPlaying;
-    setTrackIndex(next);
-    setCurrentTime(0);
-    setDuration(0);
-    const player = playerRef.current;
-    if (!player) return;
-    try {
-      if (wasPlaying) {
-        player.loadVideoById(TRACKS[next]!.videoId);
-      } else {
-        player.cueVideoById(TRACKS[next]!.videoId);
-      }
-    } catch {
-      /* player not ready */
-    }
-  };
-
-  const togglePlay = () => {
-    const player = playerRef.current;
-    if (!player || !ready) return;
-    if (isPlaying) {
-      player.pauseVideo();
-    } else {
-      player.playVideo();
-    }
-  };
-
+  }, [active, setInlineVisible]);
   const seek = (clientX: number, bar: HTMLDivElement) => {
-    const player = playerRef.current;
-    if (!player || duration <= 0) return;
+    if (!ready || duration <= 0) return;
     const rect = bar.getBoundingClientRect();
-    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-    player.seekTo(ratio * duration, true);
-    setCurrentTime(ratio * duration);
+    seekTo(Math.min(1, Math.max(0, (clientX - rect.left) / rect.width)) * duration);
   };
-
   return (
-    <div className="relative h-20 w-full min-w-0 rounded-xl bg-muted/30 p-2" data-music-player>
+    <div
+      ref={inlineRef}
+      className="relative h-20 w-full min-w-0 rounded-xl bg-muted/30 p-2"
+      data-music-player
+    >
       <div className="flex h-full items-center gap-3">
         <div className="relative h-14 w-14 flex-none" aria-hidden="true">
           <div className="absolute -bottom-2 left-1/2 h-3 w-[85%] -translate-x-1/2 rounded-[50%] bg-black/70 blur-md" />
@@ -327,7 +147,7 @@ export function MusicPlayer({ active = true }: { active?: boolean }) {
             </p>
             <div className="flex flex-none items-center gap-1">
               <button
-                disabled={!ready || unavailable}
+                disabled={!ready}
                 type="button"
                 onClick={() => goToTrack(trackIndex - 1)}
                 aria-label="Previous track"
@@ -349,7 +169,7 @@ export function MusicPlayer({ active = true }: { active?: boolean }) {
                 )}
               </button>
               <button
-                disabled={!ready || unavailable}
+                disabled={!ready}
                 type="button"
                 onClick={() => goToTrack(trackIndex + 1)}
                 aria-label="Next track"
@@ -376,7 +196,7 @@ export function MusicPlayer({ active = true }: { active?: boolean }) {
             tabIndex={ready && duration > 0 ? 0 : -1}
             aria-disabled={!ready || duration <= 0}
             onKeyDown={(e) => {
-              if (!duration || !playerRef.current) return;
+              if (!duration) return;
               const target =
                 e.key === "Home"
                   ? 0
@@ -389,8 +209,7 @@ export function MusicPlayer({ active = true }: { active?: boolean }) {
                         : null;
               if (target === null) return;
               e.preventDefault();
-              playerRef.current.seekTo(target, true);
-              setCurrentTime(target);
+              seekTo(target);
             }}
             role="slider"
             aria-label="Seek"
@@ -415,17 +234,10 @@ export function MusicPlayer({ active = true }: { active?: boolean }) {
           </div>
 
           <div className="flex items-center justify-between font-mono text-[9px] leading-[10px] text-muted-foreground">
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
+            <span>{formatMusicTime(currentTime)}</span>
+            <span>{formatMusicTime(duration)}</span>
           </div>
         </div>
-      </div>
-
-      <div
-        className="pointer-events-none absolute left-0 top-0 h-[200px] w-[200px] overflow-hidden opacity-0"
-        aria-hidden="true"
-      >
-        <div ref={hostRef} />
       </div>
     </div>
   );

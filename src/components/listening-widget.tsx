@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { ListeningStatus, ListeningTrack } from "~/types/listening";
 import { ArrowLeftRight } from "lucide-react";
 import MusicPlayer from "~/components/music-player";
+import { useMusicPlayback } from "~/providers/music-playback";
 
 export default function ListeningWidget() {
   const { resolvedTheme } = useTheme();
@@ -13,7 +14,8 @@ export default function ListeningWidget() {
   const mode = resolvedTheme === "dark" ? "dark" : "light";
 
   useEffect(() => setMounted(true), []);
-  const [showSpotify, setShowSpotify] = useState(true);
+  const { source, selectSource } = useMusicPlayback();
+  const showSpotify = source === "spotify";
   const [preview, setPreview] = useState<ListeningTrack | null>(null);
   const [playerMode, setPlayerMode] = useState<string | null>(null);
   const { data, isError } = useQuery<ListeningStatus>({
@@ -88,7 +90,7 @@ export default function ListeningWidget() {
         aria-label={showSpotify ? "Show music player" : "Show Spotify listening status"}
         title={showSpotify ? "Switch to music player" : "Switch to Spotify"}
         onClick={() => {
-          setShowSpotify(!showSpotify);
+          selectSource(showSpotify ? "library" : "spotify");
         }}
         className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
