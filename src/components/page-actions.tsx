@@ -9,7 +9,7 @@ export default function PageActions() {
   if (pathname !== "/") return <DownloadResumeBtn />;
   return (
     <>
-      <div className="h-24 shrink-0" aria-hidden="true" />
+      <div className="h-16 shrink-0" aria-hidden="true" />
       <HomeSocialDock />
     </>
   );

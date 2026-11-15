@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Pause, Play, SkipForward, X } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -104,7 +104,12 @@ export default function MusicIsland() {
     () => window.matchMedia(reducedMotionQuery).matches,
     () => false
   );
-  const [topOffset, setTopOffset] = useState(64);
+  const [position, setPosition] = useState({
+    left: 0,
+    top: 10,
+    inNavbar: false,
+    ready: false,
+  });
   const [expanded, setExpanded] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [keyboardFocus, setKeyboardFocus] = useState(false);
@@ -115,19 +120,46 @@ export default function MusicIsland() {
   const visible =
     music.hasSession && music.source === "library" && (pathname !== "/" || !music.inlineVisible);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const navigation = document.querySelector('nav[role="navigation"]');
-    if (!navigation) {
-      setTopOffset(10);
-      return;
-    }
-    const observer = new IntersectionObserver(([entry]) => {
-      setTopOffset(
-        entry.isIntersecting ? Math.max(10, navigation.getBoundingClientRect().bottom + 8) : 10
+    let frame = 0;
+    let disposed = false;
+    const measure = () => {
+      if (disposed) return;
+      const rect = navigation?.getBoundingClientRect();
+      const inNavbar = Boolean(rect && rect.top >= 0 && rect.bottom <= innerHeight);
+      const next = {
+        left: innerWidth / 2,
+        top: inNavbar && rect ? rect.top + (rect.height - 36) / 2 : 10,
+        inNavbar,
+        ready: true,
+      };
+      setPosition((previous) =>
+        Object.keys(next).every(
+          (key) => previous[key as keyof typeof next] === next[key as keyof typeof next]
+        )
+          ? previous
+          : next
       );
-    });
-    observer.observe(navigation);
-    return () => observer.disconnect();
+    };
+    const schedule = () => {
+      if (disposed) return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
+    const observer = new ResizeObserver(schedule);
+    if (navigation) observer.observe(navigation);
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    void document.fonts.ready.then(schedule);
+    measure();
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
   }, [pathname]);
 
   useEffect(() => {
@@ -170,15 +202,27 @@ export default function MusicIsland() {
 
   return (
     <div
-      className="pointer-events-none fixed left-1/2 z-40 max-w-[calc(100vw-24px)] -translate-x-1/2 motion-safe:transition-[top] motion-safe:duration-300"
-      style={{ top: `calc(${topOffset}px + env(safe-area-inset-top, 0px))` }}
+      className="pointer-events-none fixed z-40 max-w-[calc(100vw-24px)] -translate-x-1/2"
+      data-music-nav-aligned={position.inNavbar}
+      style={{
+        left: position.left,
+        top: position.inNavbar ? position.top : "calc(10px + env(safe-area-inset-top, 0px))",
+      }}
     >
       <AnimatePresence>
-        {visible && (
+        {visible && position.ready && (
           <motion.div
-            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.65, y: -12 }}
+            initial={
+              reducedMotion
+                ? { opacity: 0 }
+                : { opacity: 0, scale: 0.65, y: position.inNavbar ? 0 : -12 }
+            }
             animate={{ opacity: 1, scale: 1, y: 0, width: expanded ? 264 : 72 }}
-            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8, y: -8 }}
+            exit={
+              reducedMotion
+                ? { opacity: 0 }
+                : { opacity: 0, scale: 0.8, y: position.inNavbar ? 0 : -8 }
+            }
             transition={
               reducedMotion
                 ? { duration: 0 }
@@ -209,7 +253,7 @@ export default function MusicIsland() {
               }
             }}
           >
-            {expanded ? (
+            {expanded && (
               <motion.div
                 key="expanded"
                 initial={{ opacity: 0 }}
@@ -275,13 +319,14 @@ export default function MusicIsland() {
                   <X size={14} aria-hidden="true" />
                 </button>
               </motion.div>
-            ) : (
+            )}
+            {!expanded && (
               <button
                 ref={compactButton}
                 type="button"
                 onClick={(event) => reveal(event.detail === 0, true)}
                 aria-label={`Expand music controls: ${music.track.title}`}
-                aria-expanded={false}
+                aria-expanded={expanded}
                 title={`${music.track.title} - ${music.isPlaying ? "Playing" : "Paused"}`}
                 className={styles.compact}
               >

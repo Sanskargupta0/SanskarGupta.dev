@@ -14,6 +14,7 @@ import ReactQueryProvider from "./react-query";
 import { Toaster } from "~/components/ui/sonner";
 import I18nProvider from "~/components/providers/i18n-provider";
 import { ThemeProvider } from "~/components/providers/theme-provider";
+import { PortraitProvider } from "./portrait";
 
 const RootProviders = ({
   children,
@@ -39,7 +40,7 @@ const RootProviders = ({
                 <ScrollProgress />
                 <TopLoader />
                 <LoadingScreen />
-                {children}
+                <PortraitProvider>{children}</PortraitProvider>
                 <Toaster />
                 <MusicIsland />
               </MusicPlaybackProvider>
