@@ -140,7 +140,7 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [inlineVisible, setInlineVisible] = useState(false);
-  const [source, setSource] = useState<"spotify" | "library">("spotify");
+  const [source, setSource] = useState<"spotify" | "library">("library");
   const prepare = useCallback(() => setPrepared(true), []);
 
   useEffect(() => {
