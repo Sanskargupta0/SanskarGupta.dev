@@ -1,0 +1,141 @@
+.island {
+  pointer-events: auto;
+  position: relative;
+  height: 36px;
+  max-width: calc(100vw - 24px);
+  overflow: hidden;
+  border-radius: 999px;
+  background: #000;
+  color: #f2f2f2;
+  box-shadow: 0 12px 30px -12px rgb(0 0 0 / 50%);
+}
+.body {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  width: 264px;
+  max-width: calc(100vw - 24px);
+  height: 36px;
+  padding: 0 5px 0 6px;
+}
+.main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  height: 100%;
+  padding-right: 3px;
+  border-radius: 999px;
+  text-align: left;
+}
+.artwork {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 12px;
+  white-space: nowrap;
+}
+.time {
+  flex-shrink: 0;
+  padding-right: 3px;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: #8f8f8f;
+}
+.action {
+  display: grid;
+  flex-shrink: 0;
+  width: 26px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  color: #a3a3a3;
+  transition:
+    color 150ms,
+    background 150ms;
+}
+.action:hover {
+  color: white;
+  background: #242424;
+}
+.compact {
+  display: flex;
+  width: 72px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 999px;
+}
+.island button:focus-visible {
+  outline: 2px solid #ffb340;
+  outline-offset: -2px;
+}
+.island button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.equalizer {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+  color: #ffb340;
+}
+.equalizer i {
+  width: 2.5px;
+  height: 100%;
+  border-radius: 2px;
+  background: currentColor;
+  animation: levels 900ms ease-in-out infinite alternate;
+}
+.equalizer i:nth-child(2) {
+  animation-delay: -600ms;
+}
+.equalizer i:nth-child(3) {
+  animation-delay: -350ms;
+}
+.equalizer i:nth-child(4) {
+  animation-delay: -750ms;
+}
+@keyframes levels {
+  from {
+    transform: scaleY(0.3);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .equalizer i {
+    animation: none;
+  }
+  .equalizer i:nth-child(even) {
+    transform: scaleY(0.5);
+  }
+  .action {
+    transition: none;
+  }
+}
+
+.label[data-title-scrolling="true"] {
+  text-overflow: clip;
+}
+.scrollingTitle {
+  display: inline-block;
+  width: max-content;
+  white-space: nowrap;
+}
