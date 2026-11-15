@@ -15,7 +15,7 @@ async function handlePostRequest(request: Request): Promise<Response> {
       });
     }
 
-    await appendToGoogleSheets(data);
+    await appendToGoogleSheets(form.data);
 
     return new Response(JSON.stringify({ success: true, message: "Data saved successfully" }), {
       headers: {

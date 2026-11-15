@@ -6,8 +6,10 @@ export const ContactSchema = z.object({
   fullName: z.string().min(1, { message: "Please enter your full name." }),
   phone: z
     .string()
-    .min(1, { message: "Please enter your phone." })
-    .regex(phoneRegex, "Invalid phone number."),
+    .trim()
+    .refine((value) => !value || phoneRegex.test(value), "Invalid phone number.")
+    .optional()
+    .default(""),
   email: z
     .string()
     .min(1, { message: "Please enter a valid email address." })

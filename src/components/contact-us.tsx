@@ -10,11 +10,40 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { typo } from "./ui/typograpghy";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import confetti from "canvas-confetti";
 import { toast } from "sonner";
 
 const ContactUs = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const confettiFrame = useRef<number>();
+  useEffect(() => () => {
+    if (confettiFrame.current !== undefined) cancelAnimationFrame(confettiFrame.current);
+    confetti.reset();
+  }, []);
+
+  function celebrate() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (confettiFrame.current !== undefined) cancelAnimationFrame(confettiFrame.current);
+    const end = Date.now() + 3000;
+    const colors = ["#a786ff", "#fd8bbc", "#eca184", "#f8deb1"];
+    const frame = () => {
+      if (Date.now() > end) return;
+      for (const [x, angle] of [[0, 60], [1, 120]]) {
+        void confetti({
+          particleCount: 2,
+          angle,
+          spread: 55,
+          startVelocity: 60,
+          origin: { x, y: 0.5 },
+          colors,
+          disableForReducedMotion: true,
+        });
+      }
+      confettiFrame.current = requestAnimationFrame(frame);
+    };
+    frame();
+  }
   const form = useForm<contactSchemaType>({
     resolver: zodResolver(ContactSchema),
     defaultValues: {
@@ -53,16 +82,17 @@ const ContactUs = () => {
 
       const web3Result = await web3Res.json();
 
-      if (sheetRes.ok && web3Result.success) {
+      if (sheetRes.ok && web3Res.ok && web3Result.success) {
         toast.success("Thank you for contacting me!");
         form.reset();
+        celebrate();
       } else {
         let errorMsg = "";
         if (!sheetRes.ok) {
           const errorData = await sheetRes.json();
           errorMsg += errorData?.error || "Failed to save to sheet. ";
         }
-        if (!web3Result.success) {
+        if (!web3Res.ok || !web3Result.success) {
           errorMsg += web3Result.message || "Failed to send email.";
         }
         toast.error(errorMsg || "Something went wrong. Please try again.");
@@ -125,8 +155,10 @@ const ContactUs = () => {
                   <FormItem>
                     <FormControl>
                       <Input
-                        type="text"
-                        placeholder="Phone No"
+                        type="tel"
+                        placeholder="Phone No (optional)"
+                        aria-label="Phone number (optional)"
+                        autoComplete="tel"
                         className="normal-case"
                         {...field}
                       />
