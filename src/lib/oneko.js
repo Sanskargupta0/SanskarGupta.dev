@@ -4,7 +4,7 @@ export const petVariants = [
   { id: "tora", label: "Tora" },
   { id: "maia", label: "Maia" },
   { id: "vaporwave", label: "Vaporwave" },
-  { id: "ramxcodes", label: "RamxCodes" },
+  { id: "sanskar", label: "Sanskar" },
 ];
 
 // oneko.js: https://github.com/adryd325/oneko.js
@@ -31,7 +31,10 @@ export function startOneko() {
       localStorage.setItem("oneko:" + key, JSON.stringify(value));
     } catch {}
   }
-  const saved = readPreference("variant");
+  // Keep the replacement selected for visitors who chose the previous mascot.
+  const preference = readPreference("variant");
+  const saved = preference === "ramxcodes" ? "sanskar" : preference;
+  if (preference === "ramxcodes") savePreference("variant", saved);
   variant = petVariants.some((p) => p.id === saved)
     ? saved
     : petVariants[Math.floor(Math.random() * petVariants.length)].id;

@@ -10,7 +10,7 @@ export default function StatusBadge() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="h-[30px] w-[250px] max-w-full shrink-0">
+    <div className="h-[30px] w-[190px] max-w-full shrink-0">
       {mounted && (
         <iframe
           title="Service status"
