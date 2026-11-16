@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, type MouseEvent } from "react";
-import { Download, Loader2, Mail } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { socialsIcons } from "~/components/socials";
 import { FloatingDock, type DockItem } from "~/components/ui/floating-dock";
-import config from "~/config";
 import { resumeConfig } from "~/constants/resume";
 
 export default function HomeSocialDock() {
@@ -35,13 +34,12 @@ export default function HomeSocialDock() {
   }
   const items: DockItem[] = [
     ...socialsIcons
-      .filter((social) => !["Discord", "YouTube", "Buy Me a Coffee"].includes(social.label))
+      .filter((social) => !["Instagram", "Discord", "YouTube", "Buy Me a Coffee"].includes(social.label))
       .map((social) => ({
         title: social.label,
         icon: social.icon,
         href: social.href,
       })),
-    { title: "Email", icon: <Mail />, href: "mailto:" + config.social.email },
     {
       title: "Download resume",
       icon: downloading ? <Loader2 className="animate-spin" /> : <Download />,
