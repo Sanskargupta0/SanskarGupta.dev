@@ -51,6 +51,11 @@ export default function SwarmCursors() {
     };
   }, []);
 
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-swarm-active", loading || active);
+    return () => document.documentElement.removeAttribute("data-swarm-active");
+  }, [loading, active]);
+
   async function toggle() {
     if (pending.current) return;
     if (active) { window.__swarmRebuild?.stop(false); return; }
