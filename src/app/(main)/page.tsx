@@ -4,6 +4,7 @@ import { PostList } from "~/components/post";
 import { ProjectList, projects } from "~/components/project";
 import Skills from "~/components/skills";
 import Experience from "~/components/experience";
+import Education from "~/components/education";
 import { sortPosts } from "~/lib/utils";
 import ContactUs from "../../components/contact-us";
 import GitHubContributions from "~/components/github-contributions";
@@ -23,6 +24,7 @@ const HomePage = () => {
       <Skills />
       <Experience />
       <GitHubContributions />
+      <Education />
       <ProjectList projects={projects.slice(0, 4)} metadata />
       <PostList posts={sortedPosts.slice(0, 4)} showRss layout="single" />
       <ContactUs />
