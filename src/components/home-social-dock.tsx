@@ -51,6 +51,7 @@ export default function HomeSocialDock() {
   return (
     <nav
       aria-label="Social links and resume"
+      data-swarm-ignore
       className="pointer-events-none fixed inset-x-4 z-40 md:inset-x-0"
       style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
     >
