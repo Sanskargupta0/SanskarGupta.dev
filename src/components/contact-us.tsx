@@ -114,7 +114,11 @@ const ContactUs = () => {
             at{" "}
             <CustomLink href={`mailto:${config.social.email}`} aria-label={config.social.email}>
               {config.social.email}
-            </CustomLink>{" "}
+            </CustomLink>
+            <br />
+            <CustomLink href={`tel:${config.social.phone}`} aria-label="Call Sanskar Gupta">
+              +91 9169444674
+            </CustomLink>
           </p>
 
           <div className="space-y-3">
