@@ -1,6 +1,6 @@
 import { ClassValue } from "clsx";
 import { Linkedin, Mail } from "lucide-react";
-import { FaInstagram, FaXTwitter } from "react-icons/fa6";
+import { FaInstagram, FaWhatsapp, FaXTwitter } from "react-icons/fa6";
 import { FiGithub } from "react-icons/fi";
 import { TbBrandDiscord } from "react-icons/tb";
 import { SiBuymeacoffee } from "react-icons/si";
@@ -42,11 +42,11 @@ export const socialsIcons = [
     label: "Email",
     icon: <Mail className="size-[1.2rem]" />,
     href: `mailto:${config.social.email}`,
-    className: "hover:bg-gray-400 hover:text-black" as ClassValue,
+    className: "hover:bg-red-500 hover:text-black" as ClassValue,
   },
   {
     id: 6,
-    label: "Twitter",
+    label: "X (Twitter)",
     icon: <FaXTwitter className="size-[1.2rem]" />,
     href: config.social.twitter,
     className: "hover:bg-[#1DA1F2] hover:text-white" as ClassValue,
@@ -61,9 +61,20 @@ export const socialsIcons = [
 ];
 
 const Socials = () => {
+  const contactSocials = socialsIcons.map((social) =>
+    social.label === "Discord"
+      ? {
+          ...social,
+          label: "WhatsApp",
+          icon: <FaWhatsapp className="size-[1.2rem]" />,
+          href: `https://wa.me/${config.social.phone.replace(/\D/g, "")}`,
+          className: "hover:bg-green-600 hover:text-white" as ClassValue,
+        }
+      : social
+  );
   return (
     <ul className="flex items-center gap-2">
-      {socialsIcons.map((social) => (
+      {contactSocials.map((social) => (
         <li key={social.id}>
           <Tooltip>
             <TooltipTrigger asChild>
