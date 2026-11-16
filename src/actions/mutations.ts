@@ -17,6 +17,6 @@ export const useIncrementViewCount = () => {
 
   return useMutation({
     mutationFn: (slug: string) => fetchFunc<TViewCount>(`/views/${slug}`, { method: "POST" }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["POST_VIEWS"] }),
+    onSuccess: (_, slug) => queryClient.invalidateQueries({ queryKey: ["POST_VIEWS", slug] }),
   });
 };

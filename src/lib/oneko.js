@@ -499,7 +499,7 @@ export function startOneko() {
   }
 
   function avoidControls(x, y) {
-    const controls = document.querySelectorAll('[data-oneko-dodge], #oneko-dodge, .article-toc-pill, .download-resume-btn');
+    const controls = document.querySelectorAll('[data-oneko-dodge], #oneko-dodge, .article-toc-pill');
     for (const control of controls) {
       const bounds = control.getBoundingClientRect();
       if (!bounds.width || !bounds.height) continue;
