@@ -64,6 +64,56 @@ const TRACKS: Track[] = [
     artist: "Handel / Halvorsen",
     videoId: "ApCL2GomTD4",
   },
+  {
+    title: "Ishq Mubarak",
+    artist: "Arijit Singh",
+    videoId: "V1oczq_8L0E",
+  },
+  {
+    title: "Reflections",
+    artist: "The Neighbourhood",
+    videoId: "GJNdR_MKuDM",
+  },
+  {
+    title: "Lights All Around You",
+    artist: "Grabbitz",
+    videoId: "vy-xswpt7rM",
+  },
+  {
+    title: "This Town",
+    artist: "Niall Horan",
+    videoId: "xW6YaL_gggk",
+  },
+  {
+    title: "Pahina",
+    artist: "Cup of Joe",
+    videoId: "QBmFohONyqg",
+  },
+  {
+    title: "Maine Khud Ko",
+    artist: "Mustafa Zahid",
+    videoId: "xrCAIMx3V90",
+  },
+  {
+    title: "Uska Hi Banana",
+    artist: "Arijit Singh",
+    videoId: "q-RP99S_qK0",
+  },
+  {
+    title: "Alfaaz - Vocals",
+    artist: "Hamza Malik",
+    videoId: "paE_AZeFhaM",
+  },
+  {
+    title: "Aashiqana",
+    artist: "Chaar Diwaari feat. Indian Ocean, Gini",
+    videoId: "b-gjLgT4SUQ",
+  },
+  {
+    title: "Ishq",
+    artist: "Faheem Abdullah, Rauhan Malik",
+    videoId: "hHuG7FIKgtc",
+  },
 ];
 
 function loadYouTubeApi(): Promise<void> {

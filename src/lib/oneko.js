@@ -133,6 +133,7 @@ export function startOneko() {
 
   function init() {
     nekoEl.id = "oneko";
+    nekoEl.setAttribute("data-swarm-ignore", "");
     nekoEl.setAttribute("role", "button");
     nekoEl.setAttribute(
       "aria-label",
@@ -319,6 +320,7 @@ export function startOneko() {
   }
 
   function frame() {
+    if (document.documentElement.hasAttribute("data-swarm-active")) return;
     frameCount += 1;
     if (dockQuery.matches && (!docked || !nekoEl.parentElement?.matches("[data-pet-home]"))) syncDock();
     if (paused || drag) return;
