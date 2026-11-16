@@ -65,7 +65,22 @@ const AboutSection = () => {
 
         <p className={cn(typo({ variant: "paragraph", font: "sans" }), "sm:!mt-4")}>
           <span className="text-[#00adb5]">Open to Work:</span> Full-Time, Freelance, or Collabs.{" "}
-          <a href="#contact" aria-label="Hire Me" className="el-focus-styles text-ring">
+          <a
+            href="#contact"
+            aria-label="Hire Me"
+            className="el-focus-styles text-ring"
+            onClick={(event) => {
+              if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+              const contact = document.getElementById("contact");
+              if (!contact) return;
+              event.preventDefault();
+              history.replaceState(history.state, "", "#contact");
+              contact.scrollIntoView({
+                behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+                block: "start",
+              });
+            }}
+          >
             Let's talk.
           </a>
         </p>

@@ -62,27 +62,30 @@ const RouteChangeLoader = () => {
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
 
-    // Override pushState
+    // Hash-only changes scroll within the current document; they do not load a route.
+    const routeKey = () => location.pathname + location.search;
+    let currentRoute = routeKey();
+    const trackHistoryChange = () => {
+      const nextRoute = routeKey();
+      if (nextRoute === currentRoute) return;
+      currentRoute = nextRoute;
+      handleStart();
+      setTimeout(handleComplete, 100);
+    };
+
     history.pushState = function (...args) {
-      handleStart();
       const result = originalPushState.apply(this, args);
-      setTimeout(handleComplete, 100);
+      trackHistoryChange();
       return result;
     };
 
-    // Override replaceState
     history.replaceState = function (...args) {
-      handleStart();
       const result = originalReplaceState.apply(this, args);
-      setTimeout(handleComplete, 100);
+      trackHistoryChange();
       return result;
     };
 
-    // Handle browser back/forward buttons
-    const handlePopState = () => {
-      handleStart();
-      setTimeout(handleComplete, 100);
-    };
+    const handlePopState = () => trackHistoryChange();
 
     // Listen for link clicks that might trigger navigation
     const handleLinkClick = (e: Event) => {
