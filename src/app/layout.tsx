@@ -1,5 +1,6 @@
 import { getCommandSearchEntries } from "~/lib/command-search";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { fontSans } from "~/components/ui/fonts";
 import { getSEOTags, renderSchemaTags } from "~/lib/seo";
 import { cn } from "~/lib/utils";
@@ -35,7 +36,12 @@ export default function RootLayout({
 
         <RootProviders searchEntries={getCommandSearchEntries()}>{children}</RootProviders>
 
-        {process.env.NODE_ENV === "production" && <Analytics />}
+        {process.env.NODE_ENV === "production" && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   );
