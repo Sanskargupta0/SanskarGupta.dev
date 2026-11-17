@@ -1,12 +1,15 @@
-.trigger { isolation: isolate; }
-.trigger::before { content: ""; position: absolute; inset: -4px; border: 1px solid currentColor; border-radius: inherit; opacity: 0; pointer-events: none; animation: invitation 4s ease-out 3; }
+.trigger { isolation: isolate; position: absolute; left: 8px; bottom: 8px; }
+@media (min-width: 1280px) and (hover: hover) and (pointer: fine) { .trigger { position: fixed; left: auto; bottom: auto; right: 20px; top: 50%; transform: translateY(-50%); } }
+.trigger::before { content: ""; position: absolute; inset: -4px; border: 1px solid currentColor; border-radius: inherit; opacity: 0; pointer-events: none; }
 .cage { position: relative; display: block; width: 25px; height: 25px;  }
 .pointer, .follower, .last { position: absolute; width: 15px; height: 15px; fill: currentColor; stroke: hsl(var(--background)); stroke-width: 1.5px; transition: transform .2s ease; }
 .pointer { top: 3px; left: 2px; color: #00A4AC;  z-index: 3; }
 .follower { top: 8px; left: 7px; color: #f59e0b; z-index: 2; }
 .last { top: 2px; left: 10px; color: #a78bfa; z-index: 1; }
-.trigger:hover .pointer, .trigger:focus-visible .pointer { animation: stuck .55s ease-in-out infinite; }
-.trigger:hover .follower, .trigger:focus-visible .follower { animation: stuck .65s ease-in-out .08s infinite reverse; }
+.trigger[data-attention]::before { animation: invitation 2s ease-out; }
+.trigger[data-attention] .pointer, .trigger:hover .pointer, .trigger:focus-visible .pointer { animation: stuck .55s ease-in-out infinite; }
+.trigger[data-attention] .follower, .trigger:hover .follower, .trigger:focus-visible .follower { animation: stuck .65s ease-in-out .08s infinite reverse; }
+.trigger[data-attention] .last, .trigger:hover .last, .trigger:focus-visible .last { animation: stuck .7s ease-in-out .15s infinite; }
 .trigger[data-releasing] .cage { border-color: transparent; }
 .trigger[data-releasing] .pointer { animation: escape-first .48s ease-out both; }
 .trigger[data-releasing] .follower { animation: escape-second .48s ease-out both; }
