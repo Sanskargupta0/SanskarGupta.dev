@@ -181,7 +181,16 @@ function ExperienceRow({ experience }: { experience: Experience }) {
             : "bg-[#ff3333] shadow-[0_0_6px_rgba(255,51,51,0.5)]"
         )}
       />
-      <div className="flex items-start justify-between gap-2">
+      <div className="relative">
+        <button
+          type="button"
+          aria-label={(open ? "Collapse " : "Expand ") + experience.company + " details"}
+          aria-expanded={open}
+          aria-controls={id}
+          onClick={() => setOpen((value) => !value)}
+          className="absolute inset-0 w-full cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        />
+      <div className="pointer-events-none relative flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-[7px] bg-[#151515]">
             <Image
@@ -200,7 +209,7 @@ function ExperienceRow({ experience }: { experience: Experience }) {
                   href={experience.companyUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-sm transition-colors hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:hover:text-[#00adb5]"
+                  className="pointer-events-auto inline-flex items-center gap-1 rounded-sm transition-colors hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:hover:text-[#00adb5]"
                 >
                   {experience.company}
                   <ExternalLink
@@ -230,24 +239,21 @@ function ExperienceRow({ experience }: { experience: Experience }) {
             <p>{formatPeriod(experience.period)}</p>
             <p>{experience.location}</p>
           </div>
-          <button
-            type="button"
-            aria-label={(open ? "Collapse " : "Expand ") + experience.company + " details"}
-            aria-expanded={open}
-            aria-controls={id}
-            onClick={() => setOpen((value) => !value)}
+          <span
+            aria-hidden="true"
             className={cn(
-              "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:opacity-0 md:focus-visible:opacity-100 md:group-hover/experience:opacity-100",
+              "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors md:opacity-0 md:group-focus-within/experience:opacity-100 md:group-hover/experience:opacity-100",
               open && "bg-muted text-foreground md:opacity-100"
             )}
           >
             {open ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
-          </button>
+          </span>
         </div>
       </div>
-      <div className="mt-2 flex flex-wrap gap-x-2 pl-12 text-xs leading-5 text-muted-foreground sm:hidden">
+      <div className="pointer-events-none relative mt-2 flex flex-wrap gap-x-2 pl-12 text-xs leading-5 text-muted-foreground sm:hidden">
         <span>{formatPeriod(experience.period, true)}</span>
         <span>{experience.location}</span>
+      </div>
       </div>
       <div id={id} hidden={!open} className="mt-4 space-y-4 border-t border-border pt-4">
         <div>

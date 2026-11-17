@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import { useQuery } from "@tanstack/react-query";
-import type { ListeningStatus, ListeningTrack } from "~/types/listening";
+import { listeningStatusOptions } from "~/actions/listening";
+import type { ListeningTrack } from "~/types/listening";
 import { ArrowLeftRight } from "lucide-react";
 import MusicPlayer from "~/components/music-player";
 import MusicSourceNote from "~/components/music-source-note";
@@ -19,20 +20,16 @@ export default function ListeningWidget() {
   const showSpotify = source === "spotify";
   const [preview, setPreview] = useState<ListeningTrack | null>(null);
   const [playerMode, setPlayerMode] = useState<string | null>(null);
-  const { data, isError } = useQuery<ListeningStatus>({
-    queryKey: ["listening-status"],
-    queryFn: async ({ signal }) => {
-      const response = await fetch("/api/spotify", { signal, cache: "no-store" });
-      if (!response.ok) throw new Error("Listening unavailable");
-      return response.json();
-    },
-    staleTime: 20_000,
-    refetchInterval: (query) =>
-      query.state.data?.state === "unavailable" || query.state.status === "error" ? 60_000 : 30_000,
-    refetchIntervalInBackground: false,
-    refetchOnWindowFocus: "always",
-    retry: false,
-  });
+  const [embedSession, setEmbedSession] = useState(0);
+  const previousSource = useRef(source);
+  useEffect(() => {
+    // Stop any Spotify audio when leaving it, then preload a fresh idle embed.
+    if (previousSource.current === "spotify" && source === "library") {
+      setEmbedSession((session) => session + 1);
+    }
+    previousSource.current = source;
+  }, [source]);
+  const { data, isError } = useQuery(listeningStatusOptions);
   const state = isError ? "unavailable" : data?.state;
   const track = data?.track;
   const container = useRef<HTMLDivElement>(null);
@@ -100,12 +97,14 @@ export default function ListeningWidget() {
         </button>
         <MusicSourceNote />
       </div>
-      {showSpotify && (
-        <div className="col-span-2 flex h-20 min-w-0 flex-col justify-center">
+      <div
+        aria-hidden={!showSpotify}
+        className={showSpotify ? "col-span-2 flex h-20 min-w-0 flex-col justify-center" : "hidden"}
+      >
           {preview ? (
             <div className="relative overflow-hidden rounded-xl" style={{ height: 80 * scale }}>
               <iframe
-                key={preview.kind + preview.id}
+                key={preview.kind + preview.id + embedSession}
                 title="Spotify song player"
                 src={
                   "https://open.spotify.com/embed/" +
@@ -135,8 +134,7 @@ export default function ListeningWidget() {
                   : "No song available right now"}
             </div>
           )}
-        </div>
-      )}
+      </div>
       <div className="col-span-2 min-w-0" hidden={showSpotify}>
         <MusicPlayer active={!showSpotify} />
       </div>

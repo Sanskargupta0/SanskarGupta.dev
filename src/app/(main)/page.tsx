@@ -5,7 +5,6 @@ import { ProjectList, projects } from "~/components/project";
 import Skills from "~/components/skills";
 import Experience from "~/components/experience";
 import Education from "~/components/education";
-import SwarmCursors from "~/components/swarm-cursors";
 import { sortPosts } from "~/lib/utils";
 import ContactUs from "../../components/contact-us";
 import GitHubContributions from "~/components/github-contributions";
@@ -21,7 +20,6 @@ const HomePage = () => {
 
   return (
     <div className="!mt-8 space-y-14">
-      <SwarmCursors />
       <AboutSection />
       <Skills />
       <Experience />

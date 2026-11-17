@@ -87,7 +87,7 @@ const AboutSection = () => {
       </div>
 
       <div className="order-1 min-w-0 space-y-6 sm:order-2">
-        <div className="sm:hidden md:block">
+        <div>
           <ProfilePicture />
         </div>
         <ListeningWidget />

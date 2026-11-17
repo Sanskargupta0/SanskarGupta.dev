@@ -4,6 +4,7 @@ import Image from "next/image";
 import portrait from "~/assets/images/profile-portrait.png";
 import { SmoothMascot } from "~/components/smooth-mascot";
 import PortraitToggle from "~/components/portrait-toggle";
+import SwarmCursors from "~/components/swarm-cursors";
 import { usePortrait } from "~/providers/portrait";
 
 export default function ProfilePicture() {
@@ -49,6 +50,7 @@ export default function ProfilePicture() {
         </div>
         <PortraitToggle />
       </div>
+      <SwarmCursors />
       <span className="sr-only" role="status">
         {showPhoto ? "Profile photo" : "Interactive mascot"} of Sanskar Gupta.
       </span>

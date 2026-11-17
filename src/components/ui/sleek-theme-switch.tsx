@@ -2,7 +2,8 @@
 
 import { cn } from '~/lib/utils';
 import { useTheme } from 'next-themes';
-import React, { useCallback, useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import Moon from './theme-icons/moon';
 import Sun from './theme-icons/sun';
@@ -23,6 +24,7 @@ export const useThemeToggle = ({
 
 
   const [isDark, setIsDark] = useState(false);
+  const transitioning = useRef(false);
 
   useEffect(() => {
     setIsDark(resolvedTheme === 'dark');
@@ -45,7 +47,9 @@ export const useThemeToggle = ({
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setIsDark(!isDark);
+    if (transitioning.current) return;
+    const wasDark = document.documentElement.classList.contains("dark");
+    setIsDark(!wasDark);
 
     const animation = createAnimation(variant, start, blur, gifUrl);
 
@@ -53,18 +57,21 @@ export const useThemeToggle = ({
 
     if (typeof window === 'undefined') return;
 
-    // Toggle from the resolved theme (via isDark), not `theme`, so the switch
-    // is correct even when `theme === 'system'` and matches the tracked from/to.
+    // Read the displayed theme so hydration or a system-theme update cannot
+    // leave the transition direction one render behind.
     const switchTheme = () => {
-      setTheme(isDark ? 'light' : 'dark');
+      setTheme(wasDark ? 'light' : 'dark');
     };
 
-    if (!document.startViewTransition) {
+    if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       switchTheme();
       return;
     }
 
-    document.startViewTransition(switchTheme);
+    transitioning.current = true;
+    document.startViewTransition(() => flushSync(switchTheme)).finished
+      .catch(() => {})
+      .finally(() => { transitioning.current = false; });
   }, [
     setTheme,
     variant,
@@ -89,7 +96,7 @@ export const useThemeToggle = ({
       setTheme('light');
     };
 
-    if (!document.startViewTransition) {
+    if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       switchTheme();
       return;
     }
@@ -110,7 +117,7 @@ export const useThemeToggle = ({
       setTheme('dark');
     };
 
-    if (!document.startViewTransition) {
+    if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       switchTheme();
       return;
     }
@@ -630,50 +637,49 @@ export const createAnimation = (
     };
 
     const clipPosition = getClipPathPosition(start);
+    const name = `theme-circle-${start}${blur ? '-blur' : ''}`;
 
     return {
-      name: `${variant}-${start}${blur ? '-blur' : ''}`,
+      name,
       css: `
-       ::view-transition-group(root) {
+      ::view-transition-group(root) {
         animation-duration: 1s;
-        animation-timing-function: var(--expo-out);
+        animation-timing-function: ease;
       }
-
-      ::view-transition-new(root) {
-        animation-name: reveal-light-${start}${blur ? '-blur' : ''};
-        ${blur ? 'filter: blur(2px);' : ''}
-      }
-
       ::view-transition-old(root),
-      .dark::view-transition-old(root) {
+      ::view-transition-new(root) {
+        mix-blend-mode: normal;
+      }
+      /* Restore the original dark-to-light reveal. */
+      ::view-transition-old(root) {
         animation: none;
-        z-index: -1;
+        z-index: 0;
+      }
+      ::view-transition-new(root) {
+        animation: ${name}-reveal 1s ease both;
+        z-index: 1;
+      }
+      /* Reverse the path for light-to-dark, keeping the outgoing page sharp. */
+      .dark::view-transition-old(root) {
+        animation: ${name}-path 1s ease reverse both;
+        z-index: 1;
       }
       .dark::view-transition-new(root) {
-        animation-name: reveal-dark-${start}${blur ? '-blur' : ''};
-        ${blur ? 'filter: blur(2px);' : ''}
+        animation: none;
+        z-index: 0;
       }
-
-      @keyframes reveal-dark-${start}${blur ? '-blur' : ''} {
+      @keyframes ${name}-path {
+        from { clip-path: circle(0% at ${clipPosition}); }
+        to { clip-path: circle(150% at ${clipPosition}); }
+      }
+      @keyframes ${name}-reveal {
         from {
           clip-path: circle(0% at ${clipPosition});
           ${blur ? 'filter: blur(8px);' : ''}
         }
         ${blur ? '50% { filter: blur(4px); }' : ''}
         to {
-          clip-path: circle(150.0% at ${clipPosition});
-          ${blur ? 'filter: blur(0px);' : ''}
-        }
-      }
-
-      @keyframes reveal-light-${start}${blur ? '-blur' : ''} {
-        from {
-           clip-path: circle(0% at ${clipPosition});
-           ${blur ? 'filter: blur(8px);' : ''}
-        }
-        ${blur ? '50% { filter: blur(4px); }' : ''}
-        to {
-          clip-path: circle(150.0% at ${clipPosition});
+          clip-path: circle(150% at ${clipPosition});
           ${blur ? 'filter: blur(0px);' : ''}
         }
       }

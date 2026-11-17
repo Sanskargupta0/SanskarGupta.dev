@@ -2,6 +2,16 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import config from "~/config";
 
+const defaultShareTitle = "Sanskar Gupta, software developer";
+const defaultShareDescription = "I am a software developer with over 3 years of experience.";
+
+const defaultSocialImage = {
+  url: "/images/og/sanskar-gupta.png",
+  width: 1200,
+  height: 630,
+  alt: "Sanskar Gupta, software developer with over 3 years of experience. I build scalable software and full-stack products and ship them fast.",
+};
+
 export const getSEOTags = ({
   title,
   description,
@@ -14,8 +24,8 @@ export const getSEOTags = ({
   extraTags?: Record<string, any>;
 } = {}) => {
   return {
-    title: title || config.appName,
-    description: description || config.appDescription,
+    title: title || defaultShareTitle,
+    description: description || defaultShareDescription,
     keywords: keywords || [
       "portfolio",
       "personal portfolio",
@@ -28,7 +38,8 @@ export const getSEOTags = ({
       "developer",
       "portfolio website",
     ],
-    applicationName: config.appName,
+    applicationName: "Sanskar Gupta",
+    authors: [{ name: "Sanskar Gupta", url: `https://${config.domainName}/` }],
 
     metadataBase: new URL(
       process.env.NODE_ENV === "development"
@@ -37,18 +48,20 @@ export const getSEOTags = ({
     ),
 
     openGraph: {
-      title: openGraph?.title || config.appName,
-      description: openGraph?.description || config.appDescription,
+      title: openGraph?.title || title || defaultShareTitle,
+      description: openGraph?.description || description || defaultShareDescription,
       url: openGraph?.url || `https://${config.domainName}/`,
-      siteName: openGraph?.title || config.appName,
+      siteName: "Sanskar Gupta",
+      images: openGraph?.images ?? [defaultSocialImage],
       locale: "en_US",
       type: "website",
     },
 
     twitter: {
-      title: openGraph?.title || config.appName,
-      description: openGraph?.description || config.appDescription,
+      title: openGraph?.title || title || defaultShareTitle,
+      description: openGraph?.description || description || defaultShareDescription,
       card: "summary_large_image",
+      images: openGraph?.images ?? [defaultSocialImage],
       creator: "@Sanskar362002",
     },
 

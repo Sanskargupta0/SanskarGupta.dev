@@ -10,6 +10,10 @@ import {
   type ReactNode,
 } from "react";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { listeningStatusOptions } from "~/actions/listening";
+import { shufflePlaylist } from "~/lib/shuffle-playlist";
+
 interface YTPlayer {
   playVideo(): void;
   pauseVideo(): void;
@@ -28,6 +32,7 @@ interface YTPlayerOptions {
   playerVars: Record<string, number | string>;
   events: {
     onReady?: () => void;
+    onAutoplayBlocked?: () => void;
     onStateChange?: (event: { data: number }) => void;
     onError?: () => void;
   };
@@ -182,6 +187,14 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const [prepared, setPrepared] = useState(false);
+  const [tracks, setTracks] = useState(TRACKS);
+  const queueRef = useRef(TRACKS);
+  const indexRef = useRef(0);
+  const initialized = useRef(false);
+  const autoplayPending = useRef(true);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+  const sourceRef = useRef<"spotify" | "library">("library");
+  const queryClient = useQueryClient();
   const [trackIndex, setTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasSession, setHasSession] = useState(false);
@@ -194,6 +207,24 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
   const prepare = useCallback(() => setPrepared(true), []);
 
   useEffect(() => {
+    void queryClient.prefetchQuery(listeningStatusOptions);
+    if (!initialized.current) {
+      initialized.current = true;
+      const queue = shufflePlaylist(TRACKS);
+      try {
+        const previous = localStorage.getItem("portfolio:last-first-song");
+        if (queue[0].videoId === previous && queue.length > 1) {
+          [queue[0], queue[1]] = [queue[1], queue[0]];
+        }
+        localStorage.setItem("portfolio:last-first-song", queue[0].videoId);
+      } catch { /* Storage is optional; the queue is still shuffled. */ }
+      queueRef.current = queue;
+      setTracks(queue);
+      setPrepared(true);
+    }
+  }, [queryClient]);
+
+  useEffect(() => {
     if (!prepared) return;
     let cancelled = false;
     loadYouTubeApi()
@@ -204,7 +235,7 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
         playerRef.current = new window.YT.Player(mount, {
           width: 200,
           height: 200,
-          videoId: TRACKS[0].videoId,
+          videoId: queueRef.current[indexRef.current].videoId,
           playerVars: {
             autoplay: 0,
             controls: 0,
@@ -215,10 +246,19 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
           },
           events: {
             onReady: () => {
-              if (!cancelled) setReady(true);
+              if (cancelled) return;
+              setReady(true);
+              if (autoplayPending.current && sourceRef.current === "library") {
+                playerRef.current?.playVideo();
+              }
+            },
+            onAutoplayBlocked: () => {
+              if (!cancelled && autoplayPending.current) setAutoplayBlocked(true);
             },
             onError: () => {
               if (!cancelled) {
+                autoplayPending.current = false;
+                setAutoplayBlocked(false);
                 setUnavailable(true);
                 setIsPlaying(false);
               }
@@ -226,14 +266,20 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
             onStateChange: ({ data }) => {
               if (cancelled) return;
               if (data === 1) {
+                autoplayPending.current = false;
+                setAutoplayBlocked(false);
                 setIsPlaying(true);
                 setHasSession(true);
                 setUnavailable(false);
               }
               if (data === 2 || data === 5 || data === -1) setIsPlaying(false);
-              if (data === 0) {
-                playerRef.current?.seekTo(0, true);
-                playerRef.current?.playVideo();
+              if (data === 0 && sourceRef.current === "library") {
+                const next = (indexRef.current + 1) % queueRef.current.length;
+                indexRef.current = next;
+                setTrackIndex(next);
+                setCurrentTime(0);
+                setDuration(0);
+                playerRef.current?.loadVideoById(queueRef.current[next].videoId);
               }
             },
           },
@@ -248,6 +294,22 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
       playerRef.current = null;
     };
   }, [prepared]);
+
+  useEffect(() => {
+    if (!ready || !autoplayBlocked) return;
+    const retry = (event: Event) => {
+      if (!event.isTrusted || !autoplayPending.current || sourceRef.current !== "library") return;
+      if (event instanceof KeyboardEvent && (event.metaKey || event.ctrlKey || event.altKey || event.key === "Tab")) return;
+      setAutoplayBlocked(false);
+      playerRef.current?.playVideo();
+    };
+    document.addEventListener("click", retry);
+    document.addEventListener("keydown", retry);
+    return () => {
+      document.removeEventListener("click", retry);
+      document.removeEventListener("keydown", retry);
+    };
+  }, [ready, autoplayBlocked]);
 
   useEffect(() => {
     if (!isPlaying) return;
@@ -267,11 +329,14 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
     setCurrentTime(target);
   };
   const togglePlay = () => {
+    autoplayPending.current = false;
+    setAutoplayBlocked(false);
     if (!ready || !playerRef.current || unavailable) return;
     if (isPlaying) {
       playerRef.current.pauseVideo();
       setIsPlaying(false);
     } else {
+      sourceRef.current = "library";
       setSource("library");
       setHasSession(true);
       playerRef.current.playVideo();
@@ -279,15 +344,18 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
   };
   const goToTrack = (index: number) => {
     if (!ready || !playerRef.current) return;
-    const next = (index + TRACKS.length) % TRACKS.length;
+    const next = ((index % queueRef.current.length) + queueRef.current.length) % queueRef.current.length;
+    indexRef.current = next;
     setTrackIndex(next);
     setCurrentTime(0);
     setDuration(0);
     setUnavailable(false);
-    if (isPlaying) playerRef.current.loadVideoById(TRACKS[next].videoId);
-    else playerRef.current.cueVideoById(TRACKS[next].videoId);
+    if (isPlaying) playerRef.current.loadVideoById(queueRef.current[next].videoId);
+    else playerRef.current.cueVideoById(queueRef.current[next].videoId);
   };
   const stop = () => {
+    autoplayPending.current = false;
+    setAutoplayBlocked(false);
     playerRef.current?.pauseVideo();
     playerRef.current?.seekTo(0, true);
     setIsPlaying(false);
@@ -295,8 +363,11 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
     setCurrentTime(0);
   };
   const selectSource = (next: "spotify" | "library") => {
+    sourceRef.current = next;
     setSource(next);
     if (next === "spotify") {
+      autoplayPending.current = false;
+      setAutoplayBlocked(false);
       if (ready) playerRef.current?.pauseVideo();
       setIsPlaying(false);
       setHasSession(false);
@@ -306,7 +377,7 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
   return (
     <MusicContext.Provider
       value={{
-        track: TRACKS[trackIndex],
+        track: tracks[trackIndex],
         trackIndex,
         isPlaying,
         hasSession,
