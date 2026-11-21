@@ -10,11 +10,14 @@ const JsonSchemaLD = ({ post }: { post: Post }) => {
       dangerouslySetInnerHTML={{
         __html: JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "Article",
+          "@type": "BlogPosting",
           mainEntityOfPage: {
             "@type": "WebPage",
             "@id": `https://${config.domainName}/blog/${post.slugAsParams}`,
           },
+          "@id": `https://${config.domainName}/blog/${post.slugAsParams}#article`,
+          isPartOf: { "@id": `https://${config.domainName}/#website` },
+          publisher: { "@id": `https://${config.domainName}/#person` },
           name: post.title,
           headline: post.title,
           description: post.description,
@@ -25,7 +28,7 @@ const JsonSchemaLD = ({ post }: { post: Post }) => {
           datePublished: post.originalPublishedAt ?? post.date,
           dateModified: post.updatedAt ?? post.importedAt ?? post.date,
           author: post.author ? { "@type": "Person", name: post.author } : undefined,
-        }).replace(/</g, "\u003c"),
+        }).replace(/</g, "\\u003c"),
       }}
     />
   );

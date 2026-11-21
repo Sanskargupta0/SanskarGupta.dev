@@ -10,7 +10,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
       <div className="!mb-6 space-y-4">
         <SkipContent />
         <Navbar />
-        {children}
+        <main id="main-content">{children}</main>
       </div>
       <Footer />
       <PageActions />

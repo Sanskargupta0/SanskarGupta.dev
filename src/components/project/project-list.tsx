@@ -8,7 +8,7 @@ import ProjectItem from "./project-item";
 
 const ProjectList = ({ projects, metadata }: { projects: TProject[]; metadata?: boolean }) => {
   return (
-    <section aria-label="projects" className="mt-5" id="main-content">
+    <section aria-label="projects" className="mt-5">
       {metadata && <CornerHeading>Featured Projects</CornerHeading>}
 
       <div className="mt-3">

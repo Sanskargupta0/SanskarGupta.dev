@@ -48,7 +48,7 @@ const TagsPage = () => {
 
   return (
     <div className="!mt-8 grid items-start gap-4 md:grid-cols-3">
-      <main id="main-content" className="order-2 md:order-1 md:col-span-2">
+      <div className="order-2 md:order-1 md:col-span-2">
         <h1 className="mb-4 text-lg font-medium">Articles by topic</h1>
 
         {Object.keys(result).map((tag) => (
@@ -70,7 +70,7 @@ const TagsPage = () => {
             </ul>
           </section>
         ))}
-      </main>
+      </div>
 
       <div className="top-4 order-1 space-y-1 rounded-md bg-neutral-800/50 p-2 text-xl sm:sticky md:order-2">
         <h2 className="text-center uppercase">All Tags</h2>

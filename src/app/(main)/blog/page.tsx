@@ -20,7 +20,7 @@ export const metadata: ReturnType<typeof getSEOTags> = getSEOTags({
 });
 
 const BlogPage = async ({ searchParams }: { searchParams: { search: string | undefined } }) => {
-  return <BlogPageClient posts={posts} searchTerm={searchParams.search} />;
+  return <BlogPageClient posts={posts.map(post => ({ ...post, markdown: "" }))} searchTerm={searchParams.search} />;
 };
 
 export default BlogPage;

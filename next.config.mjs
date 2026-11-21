@@ -77,6 +77,10 @@ const nextConfig = {
     imageSizes: [16, 32, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
   },
+  headers: async () => [{
+    source: "/:path*",
+    headers: [{ key: "Link", value: '<https://www.sanskargupta.dev/llms.txt>; rel="describedby", <https://www.sanskargupta.dev/sitemap.xml>; rel="sitemap"' }],
+  }],
   redirects: async () => {
     return [
       {

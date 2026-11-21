@@ -1,3 +1,5 @@
+import { JsonLd } from "~/lib/seo";
+import config from "~/config";
 import { posts } from "#site/content";
 import AboutSection from "~/components/about-section";
 import { PostList } from "~/components/post";
@@ -20,13 +22,16 @@ const HomePage = () => {
 
   return (
     <div className="!mt-8 space-y-14">
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "ProfilePage",
+        "@id": `https://${config.domainName}/#profile`, url: `https://${config.domainName}/`,
+        name: "Sanskar Gupta", mainEntity: { "@id": `https://${config.domainName}/#person` } }} />
       <AboutSection />
       <Skills />
       <Experience />
       <GitHubContributions />
       <Education />
       <ProjectList projects={projects.slice(0, 4)} metadata />
-      <PostList posts={sortedPosts.slice(0, 4)} showRss layout="single" />
+      <PostList posts={sortedPosts.slice(0, 4).map(post => ({ ...post, markdown: "" }))} showRss layout="single" />
       <ContactUs />
     </div>
   );

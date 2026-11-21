@@ -27,6 +27,7 @@ const posts = defineCollection({
       importedAt: s.isodate().optional(),
       originalPublishedAt: s.isodate().optional(),
       body: s.mdx(),
+      markdown: s.raw(),
       toc: s.toc(),
       tags: s.array(s.string()),
       metadata: s.metadata(),
