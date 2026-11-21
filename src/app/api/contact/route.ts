@@ -1,4 +1,5 @@
 import { ContactSchema, contactSchemaType } from "~/schema";
+import { env } from "~/constants/env";
 import { appendToGoogleSheets } from "~/lib/google-sheets";
 
 async function handlePostRequest(request: Request): Promise<Response> {
@@ -15,6 +16,9 @@ async function handlePostRequest(request: Request): Promise<Response> {
       });
     }
 
+    if (!env.GOOGLE_SHEETS_CLIENT_EMAIL || !env.GOOGLE_SHEETS_PRIVATE_KEY || !env.GOOGLE_SHEETS_SPREADSHEET_ID) {
+      return Response.json({ error: "Contact form is not configured" }, { status: 503 });
+    }
     await appendToGoogleSheets(form.data);
 
     return new Response(JSON.stringify({ success: true, message: "Data saved successfully" }), {

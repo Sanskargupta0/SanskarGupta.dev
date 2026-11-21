@@ -65,7 +65,11 @@ const PostTableOfContent = ({
   const pendingTarget = useRef<string | null>(null);
   const reduceMotion = useReducedMotion();
   const { scrollY } = useScroll();
-  const { scrollYProgress } = useScroll({ target: articleRef, offset: ["start start", "end end"] });
+  const { scrollYProgress } = useScroll({
+    target: articleRef,
+    offset: ["start start", "end end"],
+    layoutEffect: false,
+  });
   const items = useMemo(() => {
     const flatten = (
       entries: Post["toc"],

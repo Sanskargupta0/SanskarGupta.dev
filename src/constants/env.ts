@@ -2,15 +2,15 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
 export const env = createEnv({
-  skipValidation: true,
+  emptyStringAsUndefined: true,
 
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-    GOOGLE_SHEETS_PRIVATE_KEY: z.string().min(1),
-    GOOGLE_SHEETS_CLIENT_EMAIL: z.string().min(1),
-    GOOGLE_SHEETS_SPREADSHEET_ID: z.string().min(1),
-    POSTGRES_PRISMA_URL: z.string().min(1),
-    POSTGRES_URL_NON_POOLING: z.string().min(1),
+    GOOGLE_SHEETS_PRIVATE_KEY: z.string().min(1).optional(),
+    GOOGLE_SHEETS_CLIENT_EMAIL: z.string().min(1).optional(),
+    GOOGLE_SHEETS_SPREADSHEET_ID: z.string().min(1).optional(),
+    POSTGRES_PRISMA_URL: z.string().url().optional(),
+    POSTGRES_URL_NON_POOLING: z.string().url().optional(),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,

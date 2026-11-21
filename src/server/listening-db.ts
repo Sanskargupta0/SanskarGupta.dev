@@ -8,15 +8,16 @@ const globalForListening = globalThis as unknown as {
   listeningDb: PrismaClient | undefined;
 };
 
-const connection = new URL(env.POSTGRES_URL_NON_POOLING);
-connection.searchParams.set("connection_limit", "2");
-connection.searchParams.set("pool_timeout", "10");
+const connection = env.POSTGRES_URL_NON_POOLING ? new URL(env.POSTGRES_URL_NON_POOLING) : null;
+connection?.searchParams.set("connection_limit", "2");
+connection?.searchParams.set("pool_timeout", "10");
 
-export const listeningDb =
-  globalForListening.listeningDb ??
-  new PrismaClient({
-    datasources: { db: { url: connection.toString() } },
-    log: ["error"],
-  });
+export const listeningDb = !connection
+  ? null
+  : (globalForListening.listeningDb ??
+    new PrismaClient({
+      datasources: { db: { url: connection.toString() } },
+      log: ["error"],
+    }));
 
-globalForListening.listeningDb = listeningDb;
+if (listeningDb) globalForListening.listeningDb = listeningDb;

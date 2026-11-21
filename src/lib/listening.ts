@@ -20,6 +20,12 @@ function status(row: SpotifyListening): ListeningStatus {
 }
 
 export async function getListeningStatus(): Promise<ListeningStatus> {
+  if (!db) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("Spotify storage requires POSTGRES_URL_NON_POOLING");
+    }
+    return { state: "unavailable", track: null, checkedAt: new Date().toISOString() };
+  }
   let saved: SpotifyListening | null = null;
   let token: string | undefined;
   try {
