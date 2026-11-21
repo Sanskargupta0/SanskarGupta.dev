@@ -20,7 +20,7 @@ export const experiences = [
     period: "10/2024 - 09/2025",
     location: "Hindenburgstr, Germany",
     bullets: [
-      "Automate return processing and fraud detection for 5,000+ returns worth â‚¬520K+, reducing manual effort by ~90% and saving an estimated 2,000+ staff hours.",
+      "Automate return processing and fraud detection for 5,000+ returns worth €520K+, reducing manual effort by ~90% and saving an estimated 2,000+ staff hours.",
       "Build analytics, notifications, and scraping microservices with Node.js, FastAPI, Docker, and GitHub Actions; deliver secure dashboards with JWT authentication and WebSockets.",
     ],
     stack: ["Node.js", "React", "FastAPI", "Docker", "TailwindCSS", "GitHub Actions"],

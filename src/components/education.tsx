@@ -6,8 +6,6 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { education } from "~/constants/education";
 import CornerHeading from "~/components/ui/corner-heading";
 
-
-
 function EducationRow({ entry }: { entry: (typeof education)[number] }) {
   const [open, setOpen] = useState(false);
   const id = useId();

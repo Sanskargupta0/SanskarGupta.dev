@@ -509,3 +509,9 @@ Google Sheets credentials are required when submitting the contact form.
 Malformed configured environment values fail validation rather than bypass it.
 Set `PRISMA_LOG_QUERIES=true` only when SQL tracing is needed. Database errors
 remain logged regardless of that setting.
+
+
+## Search and agent discovery
+
+See [agent SEO documentation](docs/agent-seo.md) for crawler resources, shared
+content sources, validation commands, and optional scanner/account setup.
