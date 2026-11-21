@@ -489,3 +489,23 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 Built with ❤️ by [Sanskar Gupta](https://www.linkedin.com/in/sanskar-gupta-12476423b/)
+
+
+## Local development
+
+Run `npm run dev` to start Next.js with one Velite content watcher. Do not run
+`dev:content` alongside it; Next.js already starts the watcher. Stop the development
+server before building or starting another server in the same checkout, since
+they share `.next` output.
+
+Copy `.env.example` to `.env.local` and supply development service credentials.
+Without the PostgreSQL URLs, local view counts and Spotify history explicitly
+show unavailable; no fake data is returned or persisted. Both URLs are required
+for these features: `POSTGRES_PRISMA_URL` for views and
+`POSTGRES_URL_NON_POOLING` for listening history. Apply the existing Prisma
+migrations to your development database before testing persistence.
+
+Google Sheets credentials are required when submitting the contact form.
+Malformed configured environment values fail validation rather than bypass it.
+Set `PRISMA_LOG_QUERIES=true` only when SQL tracing is needed. Database errors
+remain logged regardless of that setting.

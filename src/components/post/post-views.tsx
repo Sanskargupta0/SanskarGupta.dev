@@ -22,7 +22,13 @@ const PostViews = ({ slug }: { slug: string }) => {
       <dt className="sr-only">Blog Post views</dt>
       <dd className="flex items-center gap-1 text-sm text-muted-foreground">
         <Eye className="size-4" aria-hidden="true" />
-        <span>{isLoading ? "..." : isError ? "Views unavailable" : `${data?.views?.count ?? 0} Views`}</span>
+        <span>
+          {isLoading
+            ? "..."
+            : isError || data?.views?.count == null
+              ? "Views unavailable"
+              : `${data?.views?.count ?? 0} Views`}
+        </span>
       </dd>
     </dl>
   );

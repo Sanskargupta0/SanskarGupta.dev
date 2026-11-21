@@ -3,6 +3,9 @@ import { env } from '~/constants/env';
 
 // Initialize Google Sheets API
 const getGoogleSheetsClient = () => {
+  if (!env.GOOGLE_SHEETS_CLIENT_EMAIL || !env.GOOGLE_SHEETS_PRIVATE_KEY || !env.GOOGLE_SHEETS_SPREADSHEET_ID) {
+    throw new Error("Contact form requires Google Sheets configuration");
+  }
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: env.GOOGLE_SHEETS_CLIENT_EMAIL,

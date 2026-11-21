@@ -13,6 +13,15 @@ export async function GET(_: Request, { params }: Options) {
   const parsed = slugSchema.safeParse(params.slug);
   if (!parsed.success) return Response.json({ message: "Invalid slug" }, { status: 400 });
   const slug = parsed.data;
+  if (!db) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("View storage requires POSTGRES_PRISMA_URL");
+      return Response.json({ message: "Views unavailable" }, { status: 503 });
+    }
+    return Response.json({ views: { slug, count: null }, available: false }, {
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
   try {
     const views = await db.views.findUnique({
       where: { slug },
@@ -31,6 +40,15 @@ export async function POST(_: Request, { params }: Options) {
   const parsed = slugSchema.safeParse(params.slug);
   if (!parsed.success) return Response.json({ message: "Invalid slug" }, { status: 400 });
   const slug = parsed.data;
+  if (!db) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("View storage requires POSTGRES_PRISMA_URL");
+      return Response.json({ message: "Views unavailable" }, { status: 503 });
+    }
+    return Response.json({ views: { slug, count: null }, available: false }, {
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
   try {
     await db.views.upsert({
       where: { slug },

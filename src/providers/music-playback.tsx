@@ -217,7 +217,9 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
           [queue[0], queue[1]] = [queue[1], queue[0]];
         }
         localStorage.setItem("portfolio:last-first-song", queue[0].videoId);
-      } catch { /* Storage is optional; the queue is still shuffled. */ }
+      } catch {
+        /* Storage is optional; the queue is still shuffled. */
+      }
       queueRef.current = queue;
       setTracks(queue);
       setPrepared(true);
@@ -227,11 +229,45 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!prepared) return;
     let cancelled = false;
+    const controller = new AbortController();
     loadYouTubeApi()
-      .then(() => {
+      .then(async () => {
         if (cancelled || !hostRef.current || !window.YT) return;
-        const mount = document.createElement("div");
+        // Attach the API only after the iframe has left about:blank. Otherwise
+        // YouTube's initial postMessage targets a window still on our origin.
+        const mount = document.createElement("iframe");
+        const params = new URLSearchParams({
+          enablejsapi: "1",
+          autoplay: "0",
+          controls: "0",
+          disablekb: "1",
+          playsinline: "1",
+          rel: "0",
+          origin: window.location.origin,
+        });
+        mount.src = `https://www.youtube.com/embed/${queueRef.current[indexRef.current].videoId}?${params}`;
+        mount.title = "Music playback";
+        mount.width = "200";
+        mount.height = "200";
+        mount.allow = "autoplay; encrypted-media";
+        mount.referrerPolicy = "strict-origin-when-cross-origin";
+        const loaded = new Promise<void>((resolve, reject) => {
+          const finish = (error?: Error) => {
+            window.clearTimeout(timeout);
+            mount.removeEventListener("load", onLoad);
+            controller.signal.removeEventListener("abort", onAbort);
+            if (error) reject(error);
+            else resolve();
+          };
+          const onLoad = () => finish();
+          const onAbort = () => finish(new Error("Playback initialization cancelled"));
+          const timeout = window.setTimeout(() => finish(new Error("Music is unavailable")), 15000);
+          mount.addEventListener("load", onLoad, { once: true });
+          controller.signal.addEventListener("abort", onAbort, { once: true });
+        });
         hostRef.current.replaceChildren(mount);
+        await loaded;
+        if (cancelled || !window.YT) return;
         playerRef.current = new window.YT.Player(mount, {
           width: 200,
           height: 200,
@@ -290,7 +326,9 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
       });
     return () => {
       cancelled = true;
+      controller.abort();
       playerRef.current?.destroy();
+      hostRef.current?.replaceChildren();
       playerRef.current = null;
     };
   }, [prepared]);
@@ -299,7 +337,11 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
     if (!ready || !autoplayBlocked) return;
     const retry = (event: Event) => {
       if (!event.isTrusted || !autoplayPending.current || sourceRef.current !== "library") return;
-      if (event instanceof KeyboardEvent && (event.metaKey || event.ctrlKey || event.altKey || event.key === "Tab")) return;
+      if (
+        event instanceof KeyboardEvent &&
+        (event.metaKey || event.ctrlKey || event.altKey || event.key === "Tab")
+      )
+        return;
       setAutoplayBlocked(false);
       playerRef.current?.playVideo();
     };
@@ -344,7 +386,8 @@ export function MusicPlaybackProvider({ children }: { children: ReactNode }) {
   };
   const goToTrack = (index: number) => {
     if (!ready || !playerRef.current) return;
-    const next = ((index % queueRef.current.length) + queueRef.current.length) % queueRef.current.length;
+    const next =
+      ((index % queueRef.current.length) + queueRef.current.length) % queueRef.current.length;
     indexRef.current = next;
     setTrackIndex(next);
     setCurrentTime(0);

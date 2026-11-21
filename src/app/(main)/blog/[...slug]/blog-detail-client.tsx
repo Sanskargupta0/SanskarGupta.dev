@@ -19,7 +19,7 @@ export default function BlogDetailClient({ post }: BlogDetailClientProps) {
   const articleRef = useRef<HTMLElement>(null);
 
   return (
-    <article ref={articleRef} lang="en" className="w-full pb-16">
+    <article ref={articleRef} lang="en" className="relative w-full pb-16">
       <div className="flex items-center justify-between">
         <BackButton>{t("common:blog.backToPosts")}</BackButton>
       </div>

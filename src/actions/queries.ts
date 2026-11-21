@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchFunc } from "~/lib/axios";
 
-type TPostView = { views: { slug: string; count: number } };
+type TPostView = { views: { slug: string; count: number | null } };
 
 export const usePostViews = (slug: string) =>
   useQuery({

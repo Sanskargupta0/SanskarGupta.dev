@@ -7,7 +7,7 @@
     "build:content": "velite --clean",
     "dev:next": "next dev",
     "build:next": "next build",
-    "dev": "run-p dev:*",
+    "dev": "next dev",
     "build": "npm install --legacy-peer-deps && run-s build:*",
     "start": "next start",
     "upgrade:latest": "npm upgrade-interactive --latest",
