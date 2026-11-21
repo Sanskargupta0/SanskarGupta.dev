@@ -14,13 +14,13 @@ export const config = {
 
   social: {
     github: "https://github.com/Sanskargupta0",
-    linkedin: "https://www.linkedin.com/in/Sanskargupta0/",
-    instagram: "https://www.instagram.com/Sanskar362002/",
+    linkedin: "https://www.linkedin.com/in/sanskarguptadev/",
+    instagram: "https://www.instagram.com/sanskargupta.dev/",
     discord: "https://discordapp.com/users/sanskargupta0",
     email: "Sanskar362002@gmail.com",
     phone: "+919169444674",
     youtube: "https://www.youtube.com/@sanskargupta9454",
-    twitter: "https://x.com/Sanskar362002",
+    twitter: "https://x.com/sanskarGuptaDev",
     buymeacoffee: "https://buymeacoffee.com/sanskargupta0",
   },
 

@@ -81,7 +81,7 @@ const nextConfig = {
     return [
       {
         source: "/linkedin",
-        destination: "https://www.linkedin.com/in/Sanskargupta0/",
+        destination: "https://www.linkedin.com/in/sanskarguptadev/",
         permanent: true,
       },
       {
@@ -96,12 +96,12 @@ const nextConfig = {
       },
       {
         source: "/instagram",
-        destination: "https://www.instagram.com/Sanskar362002/",
+        destination: "https://www.instagram.com/sanskargupta.dev/",
         permanent: true,
       },
       {
         source: "/twitter",
-        destination: "https://x.com/Sanskar362002",
+        destination: "https://x.com/sanskarGuptaDev",
         permanent: true,
       },
       {
@@ -111,7 +111,7 @@ const nextConfig = {
       },
       {
         source: "/x",
-        destination: "https://www.x.com/Sanskar362002",
+        destination: "https://x.com/sanskarGuptaDev",
         permanent: true,
       },
       {

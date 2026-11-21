@@ -1,4 +1,4 @@
-# [Portfolio](https://sanskargupta.dev/) &middot; [![Author Sanskar Gupta](https://img.shields.io/badge/Author-Sanskar-%3C%3E)](https://www.linkedin.com/in/sanskar-gupta-12476423b/)  
+# [Portfolio](https://sanskargupta.dev/) &middot; [![Author Sanskar Gupta](https://img.shields.io/badge/Author-Sanskar-%3C%3E)](https://www.linkedin.com/in/sanskarguptadev/)<br>
 [![GitHub](https://img.shields.io/badge/GitHub-%3C%3E)](https://github.com/Sanskargupta0/Portfolio)  
 [![Next.js](https://img.shields.io/badge/Next.js-%3C%3E)](https://nextjs.org/)  
 [![React](https://img.shields.io/badge/React-%3C%3E)](https://react.dev/)  
@@ -488,7 +488,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-Built with ❤️ by [Sanskar Gupta](https://www.linkedin.com/in/sanskar-gupta-12476423b/)
+Built with ❤️ by [Sanskar Gupta](https://www.linkedin.com/in/sanskarguptadev/)
 
 
 ## Local development
