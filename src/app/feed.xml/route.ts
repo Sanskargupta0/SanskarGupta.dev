@@ -26,7 +26,7 @@ export async function GET() {
     feed.item({
       title: post.title,
       url: BasePath(`/blog/${post.slugAsParams}`),
-      date: post.date,
+      date: post.originalPublishedAt ?? post.date,
       description: post.description,
       author: post.author ?? undefined,
       categories: post.tags,

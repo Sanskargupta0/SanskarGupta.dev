@@ -5,7 +5,8 @@ import { ArrowLeft, ExternalLink, Github } from "lucide-react";
 import projects, { categories } from "~/components/project/_project-mock";
 import { buttonVariants } from "~/components/ui/button";
 import { getProjectHref, getProjectSlug } from "~/lib/project-links";
-import { getSEOTags } from "~/lib/seo";
+import config from "~/config";
+import { JsonLd, getSEOTags } from "~/lib/seo";
 
 function getProject(slug: string) {
   const project = projects.find((item) => getProjectSlug(item.title) === slug);
@@ -36,6 +37,16 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
   const project = getProject(params.slug);
   return (
     <article className="!mt-8 space-y-8 pb-8" aria-labelledby="project-title">
+      <JsonLd data={{ "@context": "https://schema.org", "@graph": [
+        { "@type": "CreativeWork", "@id": `https://${config.domainName}${getProjectHref(project.title)}#project`,
+          name: project.title, description: project.description, url: `https://${config.domainName}${getProjectHref(project.title)}`,
+          creator: { "@id": `https://${config.domainName}/#person` }, keywords: project.stacks },
+        { "@type": "BreadcrumbList", itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `https://${config.domainName}/` },
+          { "@type": "ListItem", position: 2, name: "Projects", item: `https://${config.domainName}/projects` },
+          { "@type": "ListItem", position: 3, name: project.title, item: `https://${config.domainName}${getProjectHref(project.title)}` },
+        ] },
+      ] }} />
       <Link
         href="/projects"
         className="el-focus-styles inline-flex items-center gap-2 rounded-sm text-sm text-ring"

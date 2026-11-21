@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+
 import config from "~/config";
 
 const defaultShareTitle = "Sanskar Gupta, software developer";
@@ -17,7 +17,7 @@ export const getSEOTags = ({
   description,
   keywords,
   openGraph,
-  canonicalUrlRelative,
+  canonicalUrlRelative = "/",
   extraTags,
 }: Metadata & {
   canonicalUrlRelative?: string;
@@ -38,19 +38,16 @@ export const getSEOTags = ({
       "developer",
       "portfolio website",
     ],
+    robots: { index: true, follow: true },
     applicationName: "Sanskar Gupta",
     authors: [{ name: "Sanskar Gupta", url: `https://${config.domainName}/` }],
 
-    metadataBase: new URL(
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:3000/"
-        : `https://${config.domainName}/`
-    ),
+    metadataBase: new URL(`https://${config.domainName}/`),
 
     openGraph: {
       title: openGraph?.title || title || defaultShareTitle,
       description: openGraph?.description || description || defaultShareDescription,
-      url: openGraph?.url || `https://${config.domainName}/`,
+      url: openGraph?.url || `https://${config.domainName}${canonicalUrlRelative}`,
       siteName: "Sanskar Gupta",
       images: openGraph?.images ?? [defaultSocialImage],
       locale: "en_US",
@@ -66,56 +63,38 @@ export const getSEOTags = ({
     },
 
     ...(canonicalUrlRelative && {
-      alternates: { canonical: canonicalUrlRelative },
+      alternates: {
+        canonical: canonicalUrlRelative,
+        types: {
+          "application/rss+xml": `https://${config.domainName}/feed.xml`,
+          ...(canonicalUrlRelative === "/" ? { "text/markdown": `https://${config.domainName}/content/profile.md` }
+            : canonicalUrlRelative === "/projects" ? { "text/markdown": `https://${config.domainName}/content/projects.md` }
+            : canonicalUrlRelative.startsWith("/blog/") ? { "text/markdown": `https://${config.domainName}/content${canonicalUrlRelative}.md` } : {}),
+        },
+      },
     }),
 
     ...extraTags,
   };
 };
 
-export const renderSchemaTags = () => {
-  return (
-    <Script
-      id="schemaTags"
-      strategy="afterInteractive"
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify({
-          "@context": "http://schema.org",
-          "@type": "ProfilePage",
-          name: config.appName,
-          description: config.appDescription,
-          image: `https://${config.domainName}/icon.png`,
-          url: `https://${config.domainName}/`,
+export function JsonLd({ data }: { data: Record<string, unknown> }) {
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{
+    __html: JSON.stringify(data).replace(/</g, "\\u003c"),
+  }} />;
+}
 
-          dateCreated: "2022-12-23T12:34:00-05:00",
-          dateModified: "2023-12-26T14:53:00-05:00",
-          mainEntity: {
-            "@type": "Person",
-            name: "Sanskar Gupta",
-            alternateName: "Sanskar362002",
-            identifier: "123475623",
-            interactionStatistic: [
-              {
-                "@type": "InteractionCounter",
-                interactionType: "https://schema.org/FollowAction",
-                userInteractionCount: 1,
-              },
-              {
-                "@type": "InteractionCounter",
-                interactionType: "https://schema.org/LikeAction",
-                userInteractionCount: 5,
-              },
-            ],
-          },
-          applicationCategory: "ProfilePage",
-          agentInteractionStatistic: {
-            "@type": "InteractionCounter",
-            interactionType: "https://schema.org/WriteAction",
-            userInteractionCount: 2346,
-          },
-        }),
-      }}
-    />
-  );
+export const renderSchemaTags = () => {
+  const origin = `https://${config.domainName}`;
+  return <JsonLd data={{
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "Person", "@id": `${origin}/#person`, name: "Sanskar Gupta",
+        url: `${origin}/`, jobTitle: config.appDesignation, description: config.appDescription,
+        image: `${origin}/images/og/sanskar-gupta.png`,
+        sameAs: [config.social.github, config.social.linkedin, config.social.twitter, config.social.instagram] },
+      { "@type": "WebSite", "@id": `${origin}/#website`, name: "Sanskar Gupta",
+        url: `${origin}/`, inLanguage: "en", publisher: { "@id": `${origin}/#person` } },
+    ],
+  }} />;
 };

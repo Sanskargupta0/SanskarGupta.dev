@@ -1,7 +1,8 @@
 import { posts } from "#site/content";
 import { notFound } from "next/navigation";
 import { JsonSchemaLD } from "~/components/post";
-import { getSEOTags } from "~/lib/seo";
+import config from "~/config";
+import { JsonLd, getSEOTags } from "~/lib/seo";
 import "~/styles/mdx.css";
 import BlogDetailClient from "./blog-detail-client";
 
@@ -35,10 +36,11 @@ export async function generateMetadata({ params }: BlogPostParams) {
     keywords: post.tags.map((tag) => tag.replaceAll("-", " ")),
     canonicalUrlRelative: `/blog/${post.slugAsParams}`,
     extraTags: {
+      authors: post.author ? [{ name: post.author }] : null,
       openGraph: {
         title: post.title,
         description: post.description,
-        url: `/blog/${post.slugAsParams}`,
+        url: `https://${config.domainName}/blog/${post.slugAsParams}`,
         images: [
           {
             url: post.cover.src,
@@ -68,7 +70,12 @@ export default async function BlogDetail({ params }: BlogPostParams) {
   return (
     <>
       <JsonSchemaLD post={post} />
-      <BlogDetailClient post={post} />
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: `https://${config.domainName}/` },
+        { "@type": "ListItem", position: 2, name: "Blog", item: `https://${config.domainName}/blog` },
+        { "@type": "ListItem", position: 3, name: post.title, item: `https://${config.domainName}/blog/${post.slugAsParams}` },
+      ] }} />
+      <BlogDetailClient post={{ ...post, markdown: "" }} />
     </>
   );
 }
