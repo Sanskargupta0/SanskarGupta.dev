@@ -62,7 +62,7 @@ export const getSEOTags = ({
       description: openGraph?.description || description || defaultShareDescription,
       card: "summary_large_image",
       images: openGraph?.images ?? [defaultSocialImage],
-      creator: "@Sanskar362002",
+      creator: "@sanskarGuptaDev",
     },
 
     ...(canonicalUrlRelative && {
